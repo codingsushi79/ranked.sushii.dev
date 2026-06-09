@@ -1,0 +1,71 @@
+import { NextRequest } from "next/server";
+import { eq } from "drizzle-orm";
+import { ensureCurrentSeason, getLeaderboard, getLeaderboardRank, getOrCreatePlayerSeason } from "@/lib/player";
+import { getSeasonTimeline } from "@/lib/seasons";
+import { getSessionUserId } from "@/lib/auth";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
+import { jsonOk } from "@/lib/api";
+
+function parseLevel(param: string | null): number | null {
+  if (!param || param === "all" || param === "overall") return null;
+  const n = Number(param);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(1, Math.min(20, n));
+}
+
+export async function GET(req: NextRequest) {
+  const level = parseLevel(req.nextUrl.searchParams.get("level"));
+  const season = await ensureCurrentSeason();
+  const timeline = getSeasonTimeline(season);
+  const rows = await getLeaderboard(season.id, level);
+
+  const players = rows;
+
+  const userId = await getSessionUserId();
+  let viewer: {
+    username: string;
+    level: number;
+    rank: number | null;
+    rankAtLevel: number | null;
+    inList: boolean;
+  } | null = null;
+
+  if (userId) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+    if (user) {
+      const ps = await getOrCreatePlayerSeason(user.id, season.id);
+      const playerLevel = eloToLevel(ps.elo);
+      const isPlaced = ps.placementGames >= PLACEMENT_GAMES;
+
+      const rankOverall = isPlaced
+        ? await getLeaderboardRank(season.id, user.id, null)
+        : null;
+      const rankAtLevel = isPlaced
+        ? await getLeaderboardRank(season.id, user.id, playerLevel)
+        : null;
+
+      const activeRank =
+        level != null ? rankAtLevel : rankOverall;
+
+      viewer = {
+        username: user.username,
+        level: playerLevel,
+        rank: rankOverall,
+        rankAtLevel,
+        inList: activeRank != null && players.some((p) => p.username === user.username),
+      };
+    }
+  }
+
+  return jsonOk({
+    season: season.number,
+    level,
+    isLocked: timeline.isLocked,
+    players,
+    viewer,
+  });
+}

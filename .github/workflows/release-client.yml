@@ -1,0 +1,96 @@
+name: Release Windows client
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "client-v*"
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install and build unsigned installer
+        working-directory: client
+        env:
+          RANKED_UPDATE_URL: https://ranked.sushii.dev/downloads
+          ELECTRON_BUILDER_OUTPUT: release/build
+        run: |
+          npm ci
+          npm run build
+          npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
+
+      - name: Upload unsigned installer
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: ranked-cs2-client-setup-unsigned
+          path: client/release/build/ranked-cs2-client-setup.exe
+          if-no-files-found: error
+          retention-days: 14
+          archive: false
+
+    outputs:
+      artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    if: vars.SIGNPATH_ORGANIZATION_ID != ''
+    steps:
+      - name: Submit signing request to SignPath
+        id: sign
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ needs.build.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+          skip-decompress: true
+          parameters: |
+            version: ${{ github.ref_name }}
+
+      - name: Upload signed installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ranked-cs2-client-setup-signed
+          path: signed/ranked-cs2-client-setup.exe
+          if-no-files-found: error
+          retention-days: 90
+          archive: false
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: signed/ranked-cs2-client-setup.exe
+          generate_release_notes: true
+
+  build-only-hint:
+    needs: build
+    runs-on: ubuntu-latest
+    if: vars.SIGNPATH_ORGANIZATION_ID == ''
+    steps:
+      - run: |
+          echo "Built unsigned installer. SignPath is not configured yet."
+          echo "Set repository variables SIGNPATH_ORGANIZATION_ID, SIGNPATH_PROJECT_SLUG,"
+          echo "SIGNPATH_SIGNING_POLICY_SLUG and secret SIGNPATH_API_TOKEN after SignPath approval."
+          echo "See docs/SIGNPATH.md"

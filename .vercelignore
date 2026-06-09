@@ -1,0 +1,5 @@
+# Desktop Electron app — built separately, not part of the Next.js deployment
+/client/
+
+# electron-builder temp output (unpacked app can exceed Vercel's 100 MB file limit)
+/public/downloads/build/
