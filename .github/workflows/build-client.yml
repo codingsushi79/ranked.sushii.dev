@@ -1,0 +1,73 @@
+name: Build Windows client
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-client-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: false
+  CLIENT_RELEASE_TAG: client-latest
+  GITHUB_REPO: codingsushi79/ranked.sushii.dev
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Read client version
+        id: version
+        shell: pwsh
+        run: |
+          $v = (Get-Content client/package.json | ConvertFrom-Json).version
+          echo "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Install and build installer
+        working-directory: client
+        env:
+          RANKED_UPDATE_URL: https://github.com/${{ env.GITHUB_REPO }}/releases/download/${{ env.CLIENT_RELEASE_TAG }}
+          ELECTRON_BUILDER_OUTPUT: release/build
+        run: |
+          npm ci
+          npm run build
+          npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
+
+      - name: Write update manifest
+        shell: pwsh
+        run: |
+          $manifest = @{
+            version = "${{ steps.version.outputs.version }}"
+            filename = "ranked-cs2-client-setup.exe"
+          }
+          $manifest | ConvertTo-Json | Set-Content client/release/build/manifest.json
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.CLIENT_RELEASE_TAG }}
+          name: Ranked CS2 Client (latest)
+          body: |
+            Automated build from `${{ github.sha }}` on `${{ github.ref_name }}`.
+
+            **Version:** ${{ steps.version.outputs.version }}
+
+            Download `ranked-cs2-client-setup.exe` below, or from [ranked.sushii.dev/download](https://ranked.sushii.dev/download).
+          files: |
+            client/release/build/ranked-cs2-client-setup.exe
+            client/release/build/manifest.json
+          overwrite: true
+          make_latest: true

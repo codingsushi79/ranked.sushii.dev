@@ -85,16 +85,9 @@ git push origin client-v2.0.1
 5. **Approve** the signing request in SignPath.io (email notification)
 6. When the workflow finishes, download the **signed** artifact from the Actions run or GitHub Release
 
-## Step 5 — Publish signed exe to the website
+## Step 5 — Publish signed exe
 
-Copy the signed installer to the site:
-
-```bash
-cp path/to/ranked-cs2-client-setup.exe public/downloads/ranked-cs2-client-setup.exe
-vercel --prod
-```
-
-(Future improvement: automate upload to Vercel Blob or GitHub Release-only downloads.)
+After SignPath approval on a tagged release, the signed installer is attached to that GitHub Release. Day-to-day builds on `main` go to the [`client-latest`](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest) release automatically; the site download page links there.
 
 ## Step 6 — Verify on Windows
 

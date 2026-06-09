@@ -7,7 +7,8 @@ const root = path.join(__dirname, "..");
 const envPath = path.join(root, ".env");
 const outPath = path.join(root, "electron", "update-config.baked.json");
 
-export const DEFAULT_UPDATE_URL = "https://ranked.sushii.dev/downloads";
+export const DEFAULT_UPDATE_URL =
+  "https://github.com/codingsushi79/ranked.sushii.dev/releases/download/client-latest";
 
 function loadEnvFile() {
   if (!fs.existsSync(envPath)) return;

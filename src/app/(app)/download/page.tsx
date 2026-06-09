@@ -11,8 +11,38 @@ import { Button } from "@/components/ui/button";
 import { DownloadButton } from "@/components/motion/download-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/session";
+import {
+  CLIENT_DOWNLOAD_URL,
+  CLIENT_MANIFEST_URL,
+  CLIENT_RELEASE_TAG,
+  GITHUB_REPO,
+} from "@/lib/client-download";
 import { VerifyEmailPrompt } from "@/components/verify-email-prompt";
 import { Download, AlertCircle } from "lucide-react";
+import fs from "fs";
+import path from "path";
+
+async function getClientVersion() {
+  try {
+    const res = await fetch(CLIENT_MANIFEST_URL, {
+      next: { revalidate: 300 },
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { version?: string };
+      if (data.version) return data.version;
+    }
+  } catch {
+    // Fall back to repo package.json (local dev / full deploy).
+  }
+
+  try {
+    const pkgPath = path.join(process.cwd(), "client/package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8")) as { version?: string };
+    return pkg.version ?? "latest";
+  } catch {
+    return "latest";
+  }
+}
 
 export default async function DownloadPage() {
   const user = await getCurrentUser();
@@ -20,6 +50,7 @@ export default async function DownloadPage() {
 
   const canPlay = user.emailVerified;
   const canDownload = canPlay && !!user.steamId;
+  const clientVersion = await getClientVersion();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 motion-safe:scroll-smooth">
@@ -51,8 +82,8 @@ export default async function DownloadPage() {
         <CardHeader>
           <CardTitle>Ranked CS2 Client (Windows)</CardTitle>
           <CardDescription>
-            v2.0.0 · Competitive and Premier only · JSI script auto-installs on
-            launch · all-in-one desktop app (no browser window)
+            v{clientVersion} · Built on push to main · Competitive and Premier
+            only · JSI script auto-installs on launch
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -69,7 +100,7 @@ export default async function DownloadPage() {
 
           {canDownload ? (
             <DownloadButton
-              href="/downloads/ranked-cs2-client-setup.exe"
+              href={CLIENT_DOWNLOAD_URL}
               className="animate-download-glow w-full sm:w-auto"
             />
           ) : (
@@ -92,6 +123,19 @@ export default async function DownloadPage() {
               .
             </AlertDescription>
           </Alert>
+
+          <p className="text-xs text-muted-foreground">
+            Installer hosted on{" "}
+            <a
+              href={`https://github.com/${GITHUB_REPO}/releases/tag/${CLIENT_RELEASE_TAG}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4"
+            >
+              GitHub Releases
+            </a>
+            . Updates automatically when we push to main.
+          </p>
 
           <Button variant="outline" asChild>
             <Link href="/profile">Go to profile</Link>

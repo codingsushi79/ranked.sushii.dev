@@ -28,7 +28,7 @@ jobs:
       - name: Install and build unsigned installer
         working-directory: client
         env:
-          RANKED_UPDATE_URL: https://ranked.sushii.dev/downloads
+          RANKED_UPDATE_URL: https://github.com/codingsushi79/ranked.sushii.dev/releases/download/client-latest
           ELECTRON_BUILDER_OUTPUT: release/build
         run: |
           npm ci

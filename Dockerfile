@@ -51,7 +51,7 @@ RUN npm ci
 
 COPY client/ ./
 
-ENV RANKED_UPDATE_URL=https://ranked.sushii.dev/downloads
+ENV RANKED_UPDATE_URL=https://github.com/codingsushi79/ranked.sushii.dev/releases/download/client-latest
 RUN node scripts/bake-update-config.mjs \
   && npm run build:ui \
   && npm run build:electron \

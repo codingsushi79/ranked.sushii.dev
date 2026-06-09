@@ -85,11 +85,15 @@ Signed releases are built by GitHub Actions (`.github/workflows/release-client.y
 
 ## Desktop client
 
+Pushes to `main` build the Windows installer in GitHub Actions (`.github/workflows/build-client.yml`) and publish it to the [`client-latest` release](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest). The site download page links there — no manual exe upload to Vercel.
+
+Local build (optional):
+
 ```bash
 cd client
 npm install
 npm start              # dev
-npm run build:win      # outputs public/downloads/ranked-cs2-client-setup.exe
+npm run build:win      # local installer in public/downloads/
 ```
 
 1. Sign up and verify email

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { isExternalDownloadUrl } from "@/lib/client-download";
 
 type Phase = "idle" | "preparing" | "done";
 
@@ -25,13 +26,17 @@ export function DownloadButton({
     setPhase("preparing");
 
     window.setTimeout(() => {
-      const link = document.createElement("a");
-      link.href = href;
-      link.download = filename;
-      link.rel = "noopener";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      if (isExternalDownloadUrl(href)) {
+        window.open(href, "_blank", "noopener,noreferrer");
+      } else {
+        const link = document.createElement("a");
+        link.href = href;
+        link.download = filename;
+        link.rel = "noopener";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
       setPhase("done");
       window.setTimeout(() => setPhase("idle"), 2000);
     }, 500);
