@@ -39,18 +39,6 @@ npm run docker:down          # stop
 docker compose down -v       # stop and wipe database volume
 ```
 
-Build the image only (also builds the Windows client into `public/downloads/`):
-
-```bash
-npm run docker:build
-```
-
-The client exe is cross-compiled in Docker and written to `public/downloads/ranked-cs2-client-setup.exe` (gitignored). Build it alone:
-
-```bash
-npm run docker:client
-```
-
 ### Local development
 
 ```bash
@@ -93,7 +81,7 @@ Local build (optional):
 cd client
 npm install
 npm start              # dev
-npm run build:win      # local installer in public/downloads/
+npm run build:win      # optional local installer in client/release/build/
 ```
 
 1. Sign up and verify email

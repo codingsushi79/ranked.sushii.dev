@@ -22,7 +22,7 @@ const updateUrl =
   process.env.RANKED_UPDATE_URL?.trim().replace(/\/$/, "") ||
   "https://ranked.sushii.dev/downloads";
 const outputDir =
-  process.env.ELECTRON_BUILDER_OUTPUT?.trim() || "../public/downloads/build";
+  process.env.ELECTRON_BUILDER_OUTPUT?.trim() || "release/build";
 
 /** @type {import("electron-builder").Configuration} */
 module.exports = {

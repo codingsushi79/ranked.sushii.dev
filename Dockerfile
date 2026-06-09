@@ -41,24 +41,3 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 CMD ["node", "server.js"]
-
-# --- Windows client (cross-compile x64 via Wine on Mac/Linux) ---
-FROM electronuserland/builder:wine AS client-export
-WORKDIR /app/client
-
-COPY client/package.json client/package-lock.json ./
-RUN npm ci
-
-COPY client/ ./
-
-ENV RANKED_UPDATE_URL=https://github.com/codingsushi79/ranked.sushii.dev/releases/download/client-latest
-RUN node scripts/bake-update-config.mjs \
-  && npm run build:ui \
-  && npm run build:electron \
-  && cp electron/update-config.baked.json dist-electron/electron/update-config.baked.json \
-  && npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never \
-  && mkdir -p /out \
-  && mv ../public/downloads/build/ranked-cs2-client-setup.exe /out/ranked-cs2-client-setup.exe \
-  && rm -rf ../public/downloads/build
-
-WORKDIR /out

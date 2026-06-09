@@ -36,15 +36,21 @@ jobs:
           $v = (Get-Content client/package.json | ConvertFrom-Json).version
           echo "version=$v" >> $env:GITHUB_OUTPUT
 
-      - name: Install and build installer
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build client bundle
         working-directory: client
         env:
           RANKED_UPDATE_URL: https://github.com/${{ env.GITHUB_REPO }}/releases/download/${{ env.CLIENT_RELEASE_TAG }}
+        run: npm run build
+
+      - name: Package Windows installer
+        working-directory: client
+        env:
           ELECTRON_BUILDER_OUTPUT: release/build
-        run: |
-          npm ci
-          npm run build
-          npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
+        run: npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
 
       - name: Write update manifest
         shell: pwsh

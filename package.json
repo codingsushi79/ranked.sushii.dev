@@ -12,10 +12,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "build:client": "sh scripts/build-client.sh",
-    "docker:client": "sh scripts/docker-export-client.sh",
-    "docker:build": "npm run docker:client && docker compose build",
-    "docker:up": "npm run docker:client && docker compose up --build",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up --build",
     "docker:down": "docker compose down"
   },
   "dependencies": {

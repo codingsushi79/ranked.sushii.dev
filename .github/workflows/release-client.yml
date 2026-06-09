@@ -25,15 +25,21 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
 
-      - name: Install and build unsigned installer
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build client bundle
         working-directory: client
         env:
           RANKED_UPDATE_URL: https://github.com/codingsushi79/ranked.sushii.dev/releases/download/client-latest
+        run: npm run build
+
+      - name: Package Windows installer
+        working-directory: client
+        env:
           ELECTRON_BUILDER_OUTPUT: release/build
-        run: |
-          npm ci
-          npm run build
-          npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
+        run: npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
 
       - name: Upload unsigned installer
         id: upload-unsigned

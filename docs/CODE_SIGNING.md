@@ -36,7 +36,7 @@ Third-party components in the client include Electron, Node.js runtime libraries
 2. GitHub Actions builds the unsigned installer on `windows-latest`.
 3. The workflow submits the artifact to SignPath.io for signing.
 4. An **Approver** approves the signing request in SignPath.io.
-5. The signed installer is attached to the GitHub Release and copied to `public/downloads/` for site deployment (manual step until automated).
+5. The signed installer is attached to the GitHub Release (see [`client-latest`](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest) for continuous builds).
 
 ## Reporting issues
 

@@ -42,7 +42,7 @@
     "appId": "dev.sushii.ranked-cs2",
     "productName": "Ranked CS2",
     "directories": {
-      "output": "../public/downloads/build"
+      "output": "release/build"
     },
     "files": [
       "dist/**/*",

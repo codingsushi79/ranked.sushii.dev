@@ -20,13 +20,12 @@
 
 # production
 /build
-public/downloads/*.exe
-public/downloads/build/
 
-# electron client build output (CI builds these)
+# local electron client build output
 /client/dist/
 /client/dist-electron/
 /client/release/
+/public/downloads/
 
 # misc
 .DS_Store
