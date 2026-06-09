@@ -67,8 +67,9 @@ export default function CodeSigningPage() {
           development build.
         </p>
         <p>
-          See our <Link href="/terms">Terms of Service</Link> for hosted-service
-          data practices. Third-party libraries are listed in{" "}
+          See our <Link href="/privacy">Privacy Policy</Link> and{" "}
+          <Link href="/terms">Terms of Service</Link> for hosted-service data
+          practices. Third-party libraries are listed in{" "}
           <code>client/package-lock.json</code> (Electron, React, etc.).
         </p>
 

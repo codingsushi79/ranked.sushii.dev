@@ -42,7 +42,7 @@ const SECTIONS = [
   },
   {
     title: "9. Contact",
-    body: "Questions about these terms can be sent to the site operator through the contact method listed on the main site or repository.",
+    body: "Questions about these terms can be sent to the site operator through the contact method listed on the main site or repository. See also our Privacy Policy at /privacy.",
   },
 ] as const;
 
@@ -51,7 +51,7 @@ export default function TermsPage() {
     <article className="mx-auto max-w-2xl px-4 py-16 animate-in fade-in duration-500 fill-mode-both">
       <header className="flex flex-col gap-2 animate-in slide-in-from-bottom-3 duration-500 fill-mode-both">
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
-        <p className="text-sm text-muted-foreground">Last updated May 30, 2026</p>
+        <p className="text-sm text-muted-foreground">Last updated June 9, 2026</p>
       </header>
 
       <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-muted-foreground">
@@ -69,15 +69,26 @@ export default function TermsPage() {
         ))}
       </div>
 
-      <Link
-        href="/signup"
-        className={cn(
-          buttonVariants({ variant: "outline" }),
-          "mt-8 animate-in fade-in duration-500 fill-mode-both delay-500 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-        )}
-      >
-        Back to sign up
-      </Link>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link
+          href="/privacy"
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "animate-in fade-in duration-500 fill-mode-both delay-500 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          )}
+        >
+          Privacy Policy
+        </Link>
+        <Link
+          href="/signup"
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "animate-in fade-in duration-500 fill-mode-both delay-500 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          )}
+        >
+          Back to sign up
+        </Link>
+      </div>
     </article>
   );
 }

@@ -26,7 +26,7 @@ The desktop client:
 - Connects to **ranked.sushii.dev** only when you save a Client ID, verify your account, or report a **Competitive** or **Premier** match result.
 - Does not send data to other networked systems unless you configure it to use a different API URL (development builds only).
 
-The hosted service’s data practices are described in our [Terms of Service](https://ranked.sushii.dev/terms).
+The hosted service’s data practices are described in our [Privacy Policy](https://ranked.sushii.dev/privacy) and [Terms of Service](https://ranked.sushii.dev/terms).
 
 Third-party components in the client include Electron, Node.js runtime libraries, and open-source npm packages (see `client/package-lock.json`).
 

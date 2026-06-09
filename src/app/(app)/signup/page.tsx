@@ -114,6 +114,14 @@ export default function SignupPage() {
                       className="text-foreground underline-offset-4 hover:underline"
                     >
                       Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      className="text-foreground underline-offset-4 hover:underline"
+                    >
+                      Privacy Policy
                     </Link>
                   </span>
                 </label>
