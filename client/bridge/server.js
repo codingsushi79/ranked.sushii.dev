@@ -44,7 +44,15 @@ async function reportMatch(config, payload) {
     },
     body: JSON.stringify(payload),
   });
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `API error (${res.status}): ${text.slice(0, 200) || res.statusText}`
+    );
+  }
   if (!res.ok) throw new Error(data.error || "Report failed");
   return data;
 }

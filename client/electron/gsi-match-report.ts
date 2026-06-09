@@ -1,5 +1,11 @@
 import type { RawGsiPayload } from "./gsi-server";
-import { normalizeMatchMode } from "./match-modes";
+import { normalizeMatchMode, type AllowedMatchMode } from "./match-modes";
+
+export type GsiMatchSessionMeta = {
+  map: string;
+  mode: string;
+  lastLivePayload?: RawGsiPayload | null;
+};
 
 export type GsiMatchPlayer = {
   steamId: string;
@@ -50,6 +56,56 @@ function adrFromStats(stats: Record<string, unknown> | undefined): number {
   return 0;
 }
 
+function resolveScores(
+  payload: RawGsiPayload,
+  fallback?: RawGsiPayload | null
+): { team0Score: number; team1Score: number } {
+  let team0Score = readNumber(payload.map?.team_ct?.score);
+  let team1Score = readNumber(payload.map?.team_t?.score);
+
+  if (fallback?.map) {
+    const fb0 = readNumber(fallback.map.team_ct?.score);
+    const fb1 = readNumber(fallback.map.team_t?.score);
+    const currentTotal = team0Score + team1Score;
+    const fallbackTotal = fb0 + fb1;
+
+    if (team0Score === team1Score && fb0 !== fb1) {
+      team0Score = fb0;
+      team1Score = fb1;
+    } else if (fallbackTotal > currentTotal) {
+      team0Score = fb0;
+      team1Score = fb1;
+    }
+  }
+
+  return { team0Score, team1Score };
+}
+
+function collectPlayers(
+  payload: RawGsiPayload,
+  fallback?: RawGsiPayload | null
+): GsiMatchPlayer[] {
+  const bySteamId = new Map<string, GsiMatchPlayer>();
+
+  for (const source of [payload, fallback]) {
+    if (!source) continue;
+
+    if (source.allplayers) {
+      for (const [steamId, data] of Object.entries(source.allplayers)) {
+        const parsed = playerFromGsi(steamId, data);
+        if (parsed) bySteamId.set(steamId, parsed);
+      }
+    }
+
+    if (source.player?.steamid) {
+      const parsed = playerFromGsi(source.player.steamid, source.player);
+      if (parsed) bySteamId.set(source.player.steamid, parsed);
+    }
+  }
+
+  return [...bySteamId.values()];
+}
+
 function playerFromGsi(
   steamId: string,
   data: {
@@ -75,38 +131,32 @@ function playerFromGsi(
 
 export function buildMatchReportFromGsi(
   payload: RawGsiPayload,
-  externalId: string
+  externalId: string,
+  session?: GsiMatchSessionMeta
 ): GsiMatchReport | { error: string } {
-  const mapName = payload.map?.name;
+  const fallback = session?.lastLivePayload ?? null;
+  const mapName =
+    payload.map?.name && payload.map.name !== "menu"
+      ? payload.map.name
+      : session?.map;
   if (!mapName || mapName === "menu") {
     return { error: "No map data in GSI payload" };
   }
 
-  const mode = normalizeMatchMode(payload.map?.mode);
+  const mode: AllowedMatchMode | null =
+    normalizeMatchMode(payload.map?.mode) ??
+    (session ? normalizeMatchMode(session.mode) : null);
   if (!mode) {
     return { error: "Only Competitive and Premier matches are rated" };
   }
 
-  const team0Score = readNumber(payload.map?.team_ct?.score);
-  const team1Score = readNumber(payload.map?.team_t?.score);
+  const { team0Score, team1Score } = resolveScores(payload, fallback);
   if (team0Score === team1Score) {
-    return { error: "Match ended in a tie" };
+    return { error: "Match ended in a tie — scores missing from GSI" };
   }
   const winnerTeam = team0Score > team1Score ? 0 : 1;
 
-  const players: GsiMatchPlayer[] = [];
-
-  if (payload.allplayers) {
-    for (const [steamId, data] of Object.entries(payload.allplayers)) {
-      const parsed = playerFromGsi(steamId, data);
-      if (parsed) players.push(parsed);
-    }
-  }
-
-  if (players.length === 0 && payload.player?.steamid) {
-    const parsed = playerFromGsi(payload.player.steamid, payload.player);
-    if (parsed) players.push(parsed);
-  }
+  const players = collectPlayers(payload, fallback);
 
   if (players.length === 0) {
     return {

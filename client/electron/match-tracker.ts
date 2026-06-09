@@ -14,18 +14,20 @@ type MatchSession = {
   externalId: string;
   map: string;
   mode: string;
+  reported: boolean;
+  lastLivePayload: RawGsiPayload | null;
 };
 
-async function bridgePost(endpoint: string, body?: Record<string, unknown>) {
+async function bridgePost(endpoint: string, body?: Record<string, unknown>): Promise<boolean> {
   try {
     const res = await fetch(`${BRIDGE_URL}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body ?? {}),
     });
-    return res;
+    return res.ok;
   } catch {
-    return null;
+    return false;
   }
 }
 
@@ -112,6 +114,7 @@ export class MatchTracker {
   private cs2Connected = false;
   private inGame = false;
   private currentMode: string | null = null;
+  private pendingMatchMode: string | null = null;
   private previousMapPhase: string | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
   private matchSession: MatchSession | null = null;
@@ -175,23 +178,51 @@ export class MatchTracker {
       this.currentMode = null;
     }
 
-    if (mapPhase === "live" && this.previousMapPhase !== "live") {
-      const mode = normalizeMatchMode(payload.map?.mode);
-      if (mode) {
-        await this.onMatchStart(mapName, mode);
+    if (mapPhase === "live") {
+      if (payload.map?.mode) {
+        this.pendingMatchMode = payload.map.mode;
       }
+      if (!this.matchSession) {
+        const mode = normalizeMatchMode(payload.map?.mode ?? this.pendingMatchMode);
+        if (mode) {
+          await this.onMatchStart(mapName, mode);
+        }
+      }
+      if (this.matchSession) {
+        this.matchSession.lastLivePayload = this.gsi?.getLastPayload() ?? payload;
+      }
+    } else if (mapPhase === "warmup" || mapPhase === "intermission") {
+      this.pendingMatchMode = payload.map?.mode ?? this.pendingMatchMode;
+    } else {
+      this.pendingMatchMode = null;
     }
 
-    if (this.matchSession && (mapPhase === "live" || mapPhase === "gameover")) {
-      if (mapPhase === "gameover" && this.previousMapPhase !== "gameover") {
-        const reportPayload = this.gsi?.getLastPayload() ?? payload;
-        await this.submitMatch(reportPayload);
+    if (mapName === "menu" && this.matchSession) {
+      if (!this.matchSession.reported) {
+        await this.tryReportMatch();
+        if (this.matchSession && !this.matchSession.reported) {
+          await bridgePost("/match/error", {
+            externalId: this.matchSession.externalId,
+            message: "Match ended without a report",
+          });
+        }
       }
-    }
+      await this.onMatchEnd();
+    } else if (this.matchSession && !this.matchSession.reported) {
+      const enteredGameover =
+        mapPhase === "gameover" && this.previousMapPhase !== "gameover";
+      const leftLive = this.previousMapPhase === "live" && mapPhase !== "live";
+      const postMatchPhase =
+        mapPhase === "gameover" ||
+        mapPhase === "warmup" ||
+        mapPhase === "intermission";
 
-    if (mapPhase === "gameover" || mapPhase === "warmup" || mapPhase === "intermission") {
-      if (this.previousMapPhase === "live" || this.previousMapPhase === "gameover") {
-        await this.onMatchEnd();
+      if (
+        enteredGameover ||
+        leftLive ||
+        (postMatchPhase && this.matchSession.lastLivePayload !== null)
+      ) {
+        await this.tryReportMatch();
       }
     }
 
@@ -205,6 +236,8 @@ export class MatchTracker {
       externalId: `gsi-${Date.now()}`,
       map: mapName,
       mode,
+      reported: false,
+      lastLivePayload: null,
     };
     await bridgePost("/match/start", {
       externalId: this.matchSession.externalId,
@@ -215,24 +248,41 @@ export class MatchTracker {
     });
   }
 
-  private async submitMatch(payload: RawGsiPayload) {
-    if (!this.matchSession) return;
+  private async tryReportMatch(): Promise<void> {
+    if (!this.matchSession || this.matchSession.reported) return;
 
-    const result = buildMatchReportFromGsi(payload, this.matchSession.externalId);
+    const reportPayload =
+      this.matchSession.lastLivePayload ??
+      this.gsi?.getLastPayload();
+    if (!reportPayload) return;
+
+    const result = buildMatchReportFromGsi(reportPayload, this.matchSession.externalId, {
+      map: this.matchSession.map,
+      mode: this.matchSession.mode,
+      lastLivePayload: this.matchSession.lastLivePayload,
+    });
+
     if ("error" in result) {
       await bridgePost("/match/error", {
         externalId: this.matchSession.externalId,
         message: result.error,
       });
+      this.matchSession.reported = true;
+      await this.onMatchEnd();
       return;
     }
 
-    await bridgePost("/match", result);
+    const ok = await bridgePost("/match", result);
+    if (ok) {
+      this.matchSession.reported = true;
+      await this.onMatchEnd();
+    }
   }
 
   private async onMatchEnd() {
     this.tracking = false;
     this.matchSession = null;
+    this.pendingMatchMode = null;
     this.inGame = false;
     this.currentMode = null;
     await bridgePost("/match/stop");
@@ -263,7 +313,9 @@ export class MatchTracker {
         this.currentMode = null;
       }
 
-      if (this.tracking) {
+      if (this.matchSession && !this.matchSession.reported) {
+        void this.tryReportMatch();
+      } else if (this.tracking) {
         void this.onMatchEnd();
       }
 

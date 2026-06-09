@@ -25,7 +25,7 @@ export function writeGsiConfig(cfgDir: string, port: number): string {
         "player_position"           "0"
         "phase_countdowns"          "1"
         "allplayers_id"             "1"
-        "allplayers_state"          "0"
+        "allplayers_state"          "1"
         "allplayers_match_stats"    "1"
         "allplayers_weapons"        "0"
         "allplayers_position"       "0"
