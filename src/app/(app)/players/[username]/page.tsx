@@ -20,6 +20,8 @@ import { AdminBadge } from "@/components/admin-badge";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { RecentMatchesTable } from "@/components/recent-matches-table";
 import { listRecentMatchesForUser } from "@/lib/matches";
+import { getCsrepTrust } from "@/lib/csrep";
+import { CsrepTrustBadge, CsrepTrustPanel } from "@/components/csrep-trust-badge";
 
 export default async function PlayerProfilePage({
   params,
@@ -37,6 +39,7 @@ export default async function PlayerProfilePage({
   const ps = await getOrCreatePlayerSeason(user.id, season.id);
 
   const recentMatches = await listRecentMatchesForUser(user.id, 10);
+  const csrep = user.steamId ? await getCsrepTrust(user.steamId) : null;
 
   const kd = kdRatio(ps.kills, ps.deaths);
   const winRate =
@@ -67,6 +70,7 @@ export default async function PlayerProfilePage({
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <LevelBadge level={eloToLevel(ps.elo)} elo={ps.elo} />
+              {csrep && <CsrepTrustBadge trust={csrep} />}
               {ps.placementGames < PLACEMENT_GAMES && (
                 <Badge variant="outline">Placements</Badge>
               )}
@@ -76,6 +80,20 @@ export default async function PlayerProfilePage({
             </div>
           </div>
         </div>
+
+        {user.steamId && (
+          <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both delay-100">
+            <CardHeader>
+              <CardTitle>CSRep trust</CardTitle>
+              <CardDescription>
+                Community reputation from CSRep.gg for this Steam account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CsrepTrustPanel trust={csrep} />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[

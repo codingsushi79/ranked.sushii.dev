@@ -15,7 +15,7 @@
     "build:electron": "tsc -p tsconfig.electron.json",
     "build": "node scripts/bake-update-config.mjs && npm run build:ui && npm run build:electron && cp electron/update-config.baked.json dist-electron/electron/update-config.baked.json",
     "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && node scripts/bake-update-config.mjs && npm run build:electron && cp electron/update-config.baked.json dist-electron/electron/update-config.baked.json && electron .\"",
-    "electron:build": "npm run build && electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never",
+    "electron:build": "npm run build && electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never",
     "build:win": "npm run electron:build",
     "start": "electron ."
   },
@@ -58,13 +58,22 @@
     "win": {
       "target": [
         {
-          "target": "portable",
+          "target": "nsis",
           "arch": ["x64"]
         }
       ],
       "artifactName": "ranked-cs2-client-setup.${ext}",
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "include": "build/installer.nsh",
+      "installerLanguages": ["en_US"],
+      "shortcutName": "Ranked CS2"
     }
   }
 }

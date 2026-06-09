@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/motion/loading-button";
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -37,7 +39,7 @@ export default function SignupPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Signup failed");
       toast.success("Account created — verify your email when you're ready to play");
-      router.push("/profile");
+      router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/profile");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Signup failed");

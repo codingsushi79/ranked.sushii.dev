@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { users, playerSeasons, matchPlayers, matches } from "@/db/schema";
 import { ensureCurrentSeason, getOrCreatePlayerSeason, kdRatio } from "@/lib/player";
 import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
+import { getCsrepTrust } from "@/lib/csrep";
+import { csrepTrustToJson } from "@/lib/csrep-types";
 import { jsonError, jsonOk } from "@/lib/api";
 
 export async function GET(
@@ -36,6 +38,8 @@ export async function GET(
     .orderBy(desc(matches.createdAt))
     .limit(10);
 
+  const csrep = user.steamId ? csrepTrustToJson(await getCsrepTrust(user.steamId)) : null;
+
   return jsonOk({
     username: user.username,
     steamName: user.steamName,
@@ -62,6 +66,7 @@ export async function GET(
           ? Math.round((ps.wins / (ps.wins + ps.losses)) * 100)
           : 0,
     },
+    csrep,
     recentMatches,
   });
 }

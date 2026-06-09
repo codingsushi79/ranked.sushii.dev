@@ -91,7 +91,15 @@ export default function CodeSigningPage() {
           >
             docs/CODE_SIGNING.md
           </a>{" "}
-          (replace GitHub URL with your public repository).
+          on{" "}
+          <a
+            href="https://github.com/codingsushi79/ranked.sushii.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+          .
         </p>
       </div>
 

@@ -161,7 +161,7 @@ export function buildMatchReportFromGsi(
   if (players.length === 0) {
     return {
       error:
-        "No player stats in GSI — restart CS2 after reinstalling GSI config",
+        "No player stats in GSI — restart CS2 after launching the game",
     };
   }
 

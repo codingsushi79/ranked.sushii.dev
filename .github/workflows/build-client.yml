@@ -50,7 +50,7 @@ jobs:
         working-directory: client
         env:
           ELECTRON_BUILDER_OUTPUT: release/build
-        run: npx electron-builder --config electron-builder.config.cjs --win portable --x64 --publish never
+        run: npx electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never
 
       - name: Write update manifest
         shell: pwsh

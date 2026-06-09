@@ -25,6 +25,8 @@ import { LevelBadge } from "@/components/level-badge";
 import { KillsIcon, DeathsIcon } from "@/components/stat-icons";
 import { AdminBadge } from "@/components/admin-badge";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { CsrepTrustBadge } from "@/components/csrep-trust-badge";
+import type { CsrepTrustJson } from "@/lib/csrep-types";
 import { SeasonCountdown } from "@/components/season-countdown";
 import { cn } from "@/lib/utils";
 import { Crosshair } from "lucide-react";
@@ -44,6 +46,7 @@ type LeaderboardPlayer = {
   kills: number;
   deaths: number;
   kd: number;
+  csrep: CsrepTrustJson | null;
 };
 
 type ViewerInfo = {
@@ -200,6 +203,7 @@ export function LeaderboardView({
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>Player</TableHead>
+                    <TableHead>Trust</TableHead>
                     <TableHead>Level</TableHead>
                     <TableHead>Elo</TableHead>
                     <TableHead>W/L</TableHead>
@@ -258,6 +262,9 @@ export function LeaderboardView({
                               )}
                             </span>
                           </Link>
+                        </TableCell>
+                        <TableCell>
+                          <CsrepTrustBadge trust={p.csrep} />
                         </TableCell>
                         <TableCell>
                           <LevelBadge level={p.level} elo={p.elo} />

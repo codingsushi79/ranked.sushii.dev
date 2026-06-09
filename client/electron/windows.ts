@@ -31,16 +31,16 @@ export function createMainWindow() {
   }
 
   const workArea = screen.getPrimaryDisplay().workArea;
-  const windowWidth = 420;
-  const margin = 12;
+  const windowWidth = 980;
+  const windowHeight = Math.min(760, workArea.height - 48);
 
   const win = new BrowserWindow({
     width: windowWidth,
-    height: workArea.height - margin * 2,
-    minWidth: 380,
-    minHeight: 600,
-    x: workArea.x + workArea.width - windowWidth - margin,
-    y: workArea.y + margin,
+    height: windowHeight,
+    minWidth: 820,
+    minHeight: 620,
+    x: workArea.x + Math.round((workArea.width - windowWidth) / 2),
+    y: workArea.y + Math.round((workArea.height - windowHeight) / 2),
     frame: false,
     transparent: true,
     roundedCorners: true,

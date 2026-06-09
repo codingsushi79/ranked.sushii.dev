@@ -109,6 +109,19 @@ export type ScoreboardEntry = {
   adr?: number;
 };
 
+export const csrepProfiles = pgTable("csrep_profiles", {
+  steamId: text("steam_id").primaryKey(),
+  score: integer("score"),
+  label: text("label").notNull().default("Unknown"),
+  autoflagged: boolean("autoflagged").notNull().default(false),
+  overwatchConvicted: boolean("overwatch_convicted").notNull().default(false),
+  reportsCount: integer("reports_count").notNull().default(0),
+  profileUrl: text("profile_url").notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
+});
+
+export type CsrepProfileRow = typeof csrepProfiles.$inferSelect;
+
 export const matches = pgTable(
   "matches",
   {

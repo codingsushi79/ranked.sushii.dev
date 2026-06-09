@@ -3,6 +3,9 @@ import { eq } from "drizzle-orm";
 import { ensureCurrentSeason, getLeaderboard, getLeaderboardRank, getOrCreatePlayerSeason } from "@/lib/player";
 import { getSeasonTimeline } from "@/lib/seasons";
 import { getSessionUserId } from "@/lib/auth";
+import { authenticateClient } from "@/lib/client-auth";
+import { getCsrepTrustBatch } from "@/lib/csrep";
+import { csrepTrustToJson } from "@/lib/csrep-types";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
@@ -20,10 +23,21 @@ export async function GET(req: NextRequest) {
   const season = await ensureCurrentSeason();
   const timeline = getSeasonTimeline(season);
   const rows = await getLeaderboard(season.id, level);
+  const csrepMap = await getCsrepTrustBatch(
+    rows.map((row) => row.steamId).filter(Boolean) as string[]
+  );
 
-  const players = rows;
+  const players = rows.map((row) => ({
+    ...row,
+    csrep: row.steamId ? csrepTrustToJson(csrepMap.get(row.steamId) ?? null) : null,
+  }));
 
-  const userId = await getSessionUserId();
+  const userId =
+    (await getSessionUserId()) ??
+    (await authenticateClient(req.headers.get("authorization"), {
+      requireSteam: false,
+    }))?.userId ??
+    null;
   let viewer: {
     username: string;
     level: number;

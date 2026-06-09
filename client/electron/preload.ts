@@ -4,10 +4,10 @@ import type { UpdateStatusPayload } from "../shared/types";
 export interface RankedApi {
   getStatus: () => Promise<Record<string, unknown>>;
   getProfile: () => Promise<Record<string, unknown>>;
-  saveClientId: (clientId: string) => Promise<unknown>;
-  clearClientId: () => Promise<unknown>;
-  reinstallJsi: () => Promise<unknown>;
-  reinstallGsi: () => Promise<boolean>;
+  fetch: (path: string) => Promise<Record<string, unknown>>;
+  login: () => Promise<{ ok: boolean }>;
+  signOut: () => Promise<unknown>;
+  getApiUrl: () => Promise<string>;
   getAppVersion: () => Promise<string>;
   checkForUpdates: () => Promise<UpdateStatusPayload>;
   installUpdate: () => Promise<void>;
@@ -20,10 +20,10 @@ export interface RankedApi {
 const api: RankedApi = {
   getStatus: () => ipcRenderer.invoke("ranked:status"),
   getProfile: () => ipcRenderer.invoke("ranked:profile"),
-  saveClientId: (clientId) => ipcRenderer.invoke("ranked:save-client-id", clientId),
-  clearClientId: () => ipcRenderer.invoke("ranked:clear-client-id"),
-  reinstallJsi: () => ipcRenderer.invoke("ranked:reinstall-jsi"),
-  reinstallGsi: () => ipcRenderer.invoke("ranked:reinstall-gsi"),
+  fetch: (path) => ipcRenderer.invoke("ranked:fetch", path),
+  login: () => ipcRenderer.invoke("ranked:login"),
+  signOut: () => ipcRenderer.invoke("ranked:sign-out"),
+  getApiUrl: () => ipcRenderer.invoke("ranked:api-url"),
   getAppVersion: () => ipcRenderer.invoke("app:version"),
   checkForUpdates: () => ipcRenderer.invoke("update:check"),
   installUpdate: () => ipcRenderer.invoke("update:install"),

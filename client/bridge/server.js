@@ -2,7 +2,7 @@ const http = require("http");
 const path = require("path");
 const state = require("./state");
 const { normalizeMatchMode, isAllowedMatchMode } = require("./modes");
-const { inspectJsiScripts } = require("./jsi-install");
+const { inspectGameIntegration } = require("./game-integration");
 
 const MODE_REJECT_MSG =
   "Only Competitive and Premier matches are rated";
@@ -73,8 +73,8 @@ function createServer(getConfig, saveConfig, reinstallJsi) {
       if (req.method === "GET" && req.url === "/api/status") {
         const config = getConfig();
         state.setClientId(getClientId(config));
-        const jsiInstall = inspectJsiScripts(config);
-        state.setJsiInstall(jsiInstall);
+        const integration = inspectGameIntegration(config);
+        state.setGameIntegration(integration);
         sendJson(res, 200, { ...state.getStatus(), apiUrl: API_URL });
         return;
       }
@@ -199,7 +199,7 @@ function createServer(getConfig, saveConfig, reinstallJsi) {
       if (req.method === "POST" && req.url === "/match") {
         const config = getConfig();
         if (!getClientId(config)) {
-          sendJson(res, 401, { error: "No Client ID saved — open the client and save your Client ID" });
+          sendJson(res, 401, { error: "Sign in to report matches" });
           return;
         }
 

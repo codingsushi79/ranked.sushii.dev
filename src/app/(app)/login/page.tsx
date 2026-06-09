@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/motion/loading-button";
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
 
@@ -32,7 +34,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Login failed");
       toast.success("Welcome back!");
-      router.push("/profile");
+      router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/profile");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
@@ -104,7 +106,14 @@ export default function LoginPage() {
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             No account?{" "}
-            <Link href="/signup" className="text-foreground underline-offset-4 hover:underline">
+            <Link
+              href={
+                nextPath
+                  ? `/signup?next=${encodeURIComponent(nextPath)}`
+                  : "/signup"
+              }
+              className="text-foreground underline-offset-4 hover:underline"
+            >
               Sign up
             </Link>
           </p>

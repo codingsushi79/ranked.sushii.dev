@@ -11,8 +11,10 @@ function isUuid(value: string) {
 }
 
 export async function authenticateClient(
-  authorization: string | null
+  authorization: string | null,
+  options?: { requireSteam?: boolean }
 ): Promise<{ userId: string } | null> {
+  const requireSteam = options?.requireSteam ?? true;
   if (!authorization?.startsWith("Bearer ")) return null;
   const credential = authorization.slice(7).trim();
   if (!credential) return null;
@@ -21,7 +23,8 @@ export async function authenticateClient(
     const user = await db.query.users.findFirst({
       where: eq(users.id, credential),
     });
-    if (!user || !user.emailVerified || !user.steamId) return null;
+    if (!user || !user.emailVerified) return null;
+    if (requireSteam && !user.steamId) return null;
     return { userId: user.id };
   }
 
@@ -31,5 +34,6 @@ export async function authenticateClient(
     where: eq(users.clientTokenHash, tokenHash),
   });
   if (!legacy || !legacy.emailVerified) return null;
+  if (requireSteam && !legacy.steamId) return null;
   return { userId: legacy.id };
 }

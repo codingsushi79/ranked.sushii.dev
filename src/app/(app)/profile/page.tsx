@@ -14,10 +14,12 @@ import { LevelBadge } from "@/components/level-badge";
 import { KillsIcon, DeathsIcon } from "@/components/stat-icons";
 import { getCurrentUser } from "@/lib/session";
 import { formatSeasonRange } from "@/lib/dates";
+import { getCsrepTrust } from "@/lib/csrep";
 import { ProfileActions } from "@/components/profile-actions";
 import { AdminBadge } from "@/components/admin-badge";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { VerifyEmailPrompt } from "@/components/verify-email-prompt";
+import { CsrepTrustPanel } from "@/components/csrep-trust-badge";
 import { RecentMatchesTable } from "@/components/recent-matches-table";
 import { listRecentMatchesForUser } from "@/lib/matches";
 import { Target, TrendingUp } from "lucide-react";
@@ -32,6 +34,7 @@ export default async function ProfilePage({
 
   const recentMatches = await listRecentMatchesForUser(user.id, 10);
   const canPlay = user.emailVerified;
+  const csrep = user.steamId ? await getCsrepTrust(user.steamId) : null;
 
   const params = await searchParams;
   const steamMessage =
@@ -101,6 +104,21 @@ export default async function ProfilePage({
           {user.stats.isPlacing &&
             ` · ${user.stats.placementsRemaining} placement games left`}
         </p>
+
+        {user.steamId && (
+          <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both delay-100">
+            <CardHeader>
+              <CardTitle>CSRep trust</CardTitle>
+              <CardDescription>
+                Your CSRep.gg reputation — visible on your public profile and the
+                leaderboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CsrepTrustPanel trust={csrep} />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[

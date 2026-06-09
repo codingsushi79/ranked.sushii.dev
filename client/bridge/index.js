@@ -2,7 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const { createServer, listen, PORT } = require("./server");
 const state = require("./state");
-const { installJsiScripts } = require("./jsi-install");
+const {
+  installGameIntegration,
+  inspectGameIntegration,
+} = require("./game-integration");
 
 const CONFIG_PATH = path.join(
   process.env.APPDATA || path.join(require("os").homedir(), ".ranked-cs2"),
@@ -36,24 +39,33 @@ function getStoredClientId(config) {
   return config.clientId || config.token || null;
 }
 
-function runJsiInstall(config) {
+function runGameIntegrationInstall(config) {
   try {
-    const result = installJsiScripts(config);
-    config.jsiInstall = result;
+    const result = installGameIntegration(config);
+    config.gameIntegration = result;
+    config.jsiInstall = result.jsi;
     saveConfig(config);
-    state.setJsiInstall(result);
+    state.setJsiInstall(result.jsi);
+    state.setGameIntegration(result);
     return result;
   } catch (err) {
     const result = {
       ok: false,
-      installedTo: [],
-      errors: [err.message],
-      cs2Found: [],
+      gsi: { ok: false, errors: [err.message], installedTo: [] },
+      jsi: {
+        ok: false,
+        installedTo: [],
+        errors: [err.message],
+        cs2Found: [],
+        updatedAt: new Date().toISOString(),
+      },
       updatedAt: new Date().toISOString(),
     };
-    config.jsiInstall = result;
+    config.gameIntegration = result;
+    config.jsiInstall = result.jsi;
     saveConfig(config);
-    state.setJsiInstall(result);
+    state.setJsiInstall(result.jsi);
+    state.setGameIntegration(result);
     return result;
   }
 }
@@ -65,7 +77,7 @@ function startRankedBridge() {
     saveConfig(config);
   }
   state.setClientId(getStoredClientId(config));
-  runJsiInstall(config);
+  runGameIntegrationInstall(config);
 
   const server = createServer(
     () => config,
@@ -75,7 +87,7 @@ function startRankedBridge() {
     },
     () => {
       config = loadConfig();
-      return runJsiInstall(config);
+      return runGameIntegrationInstall(config);
     }
   );
 
@@ -96,4 +108,4 @@ function startRankedBridge() {
   };
 }
 
-module.exports = { startRankedBridge, PORT, CONFIG_PATH };
+module.exports = { startRankedBridge, PORT, CONFIG_PATH, installGameIntegration };

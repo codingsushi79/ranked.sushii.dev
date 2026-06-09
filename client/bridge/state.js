@@ -15,6 +15,7 @@ const state = {
   inRatedMatch: false,
   matchMode: null,
   gsiInstalled: false,
+  gameIntegration: null,
 };
 
 function setClientId(clientId) {
@@ -63,16 +64,25 @@ function setCs2Status(patch) {
   if (patch.gsiInstalled != null) state.gsiInstalled = !!patch.gsiInstalled;
 }
 
+function setGameIntegration(integration) {
+  state.gameIntegration = integration;
+  if (integration?.jsi) state.jsiInstall = integration.jsi;
+  state.gsiInstalled = !!(
+    integration?.gsiInstalled ||
+    integration?.gsi?.ok
+  );
+}
+
 function getStatus() {
   return {
     hasClientId: state.hasClientId,
-    clientIdPreview: state.clientIdPreview,
     tracking: state.tracking,
     activeMatch: state.activeMatch,
     lastReport: state.lastReport,
     lastError: state.lastError,
     bridgeStartedAt: state.bridgeStartedAt,
     jsiInstall: state.jsiInstall,
+    gameIntegration: state.gameIntegration,
     cs2Connected: state.cs2Connected,
     inMatch: state.inMatch,
     inRatedMatch: state.inRatedMatch,
@@ -88,6 +98,7 @@ module.exports = {
   stopTracking,
   setLastReport,
   setJsiInstall,
+  setGameIntegration,
   setCs2Status,
   getStatus,
 };

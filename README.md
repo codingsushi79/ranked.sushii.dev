@@ -86,10 +86,10 @@ npm run build:win      # optional local installer in client/release/build/
 
 1. Sign up and verify email
 2. Link Steam on `/profile`
-3. Copy your Client ID from `/profile`
-4. Download from `/download`
-5. Paste Client ID into the desktop app
-6. Run the client — it auto-installs `ranked.jsi.js` into CS2 JSI script folders
+3. Download the Windows installer from [`/download`](https://ranked.sushii.dev/download) or the [`client-latest` release](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest)
+4. Run the installer — it sets up CS2 GSI + JSI during setup
+5. Open Ranked CS2 and sign in with your browser
+6. Play Competitive or Premier — matches report automatically
 
 ## API
 

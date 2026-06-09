@@ -82,19 +82,19 @@ export default async function DownloadPage() {
         <CardHeader>
           <CardTitle>Ranked CS2 Client (Windows)</CardTitle>
           <CardDescription>
-            v{clientVersion} · Built on push to main · Competitive and Premier
-            only · JSI script auto-installs on launch
+            v{clientVersion} · Windows installer · Competitive and Premier
+            only · Sets up CS2 integration during install
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
             <li>Link Steam on your profile.</li>
-            <li>Copy your Client ID from your profile.</li>
-            <li>Download and run the client — paste your Client ID and save.</li>
-            <li>Launch CS2 — match tracking starts automatically when you play.</li>
+            <li>Download and run the installer — follow the setup wizard.</li>
+            <li>Open Ranked CS2 and click <strong>Log in with browser</strong>.</li>
+            <li>Launch CS2 — rated matches report automatically.</li>
           </ol>
           <p className="text-sm text-muted-foreground">
-            Your Client ID is your account UUID — it never changes. Reopen the
+            The installer adds GSI and JSI files for Counter-Strike 2. Reopen the
             app from the Start menu if you close it.
           </p>
 
