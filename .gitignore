@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/client/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -21,6 +22,11 @@
 /build
 public/downloads/*.exe
 public/downloads/build/
+
+# electron client build output (CI builds these)
+/client/dist/
+/client/dist-electron/
+/client/release/
 
 # misc
 .DS_Store

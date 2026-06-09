@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_ORG/ranked.sushii.dev.git"
+    "url": "https://github.com/codingsushi79/ranked.sushii.dev.git"
   },
   "scripts": {
     "dev": "vite",

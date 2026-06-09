@@ -14,7 +14,7 @@ Replace the placeholders below with your GitHub org/user links before applying t
 
 | Role | Responsibility | Members |
 |------|----------------|---------|
-| **Authors** | Merge changes to the default branch | `[Maintainers](https://github.com/YOUR_ORG/YOUR_REPO)` |
+| **Authors** | Merge changes to the default branch | `[Maintainers](https://github.com/codingsushi79/ranked.sushii.dev)` |
 | **Reviewers** | Review pull requests before merge | Same as maintainers (branch protection required) |
 | **Approvers** | Approve each SignPath signing request in the SignPath.io dashboard | `YOUR_GITHUB_USERNAME` |
 

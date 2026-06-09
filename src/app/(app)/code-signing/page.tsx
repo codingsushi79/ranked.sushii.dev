@@ -84,7 +84,7 @@ export default function CodeSigningPage() {
         <p>
           Full policy and release workflow:{" "}
           <a
-            href="https://github.com/YOUR_ORG/ranked.sushii.dev/blob/main/docs/CODE_SIGNING.md"
+            href="https://github.com/codingsushi79/ranked.sushii.dev/blob/main/docs/CODE_SIGNING.md"
             target="_blank"
             rel="noopener noreferrer"
           >
