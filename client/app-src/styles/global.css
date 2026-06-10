@@ -1006,6 +1006,19 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
+.level-badge-compact {
+  gap: 5px;
+}
+
+.level-badge-compact .level-badge-level {
+  font-weight: 600;
+}
+
+.level-badge-compact .level-badge-elo {
+  font-weight: 500;
+  color: var(--muted);
+}
+
 .level-badge-label {
   font-size: 14px;
   font-weight: 500;

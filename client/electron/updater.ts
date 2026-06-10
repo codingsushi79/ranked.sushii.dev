@@ -10,6 +10,7 @@ import type { UpdateStatusPayload } from "../shared/types";
 import { broadcast } from "./windows";
 
 const DEFAULT_UPDATE_URL = "https://ranked.sushii.dev/downloads";
+const AUTO_INSTALL_DELAY_MS = 3_000;
 
 let eventsAttached = false;
 let updaterConfigured = false;
@@ -102,7 +103,7 @@ function attachUpdaterEvents() {
   });
 
   autoUpdater.on("update-downloaded", (info) => {
-    sendUpdate({ status: "ready", version: info.version });
+    scheduleAutoInstall(info.version);
   });
 
   autoUpdater.on("error", (error) => {
@@ -120,8 +121,8 @@ function ensureUpdaterConfigured() {
 
   updaterConfigured = true;
   attachUpdaterEvents();
-  autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = false;
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.setFeedURL({
     provider: "generic",
     url: readUpdateUrl(),
@@ -175,12 +176,27 @@ async function downloadPortableFromManifest(filename: string, version: string) {
 
     await pipeline(reader, createWriteStream(destination));
     pendingPortablePath = destination;
-    sendUpdate({ status: "ready", version });
+    scheduleAutoInstall(version);
   })().finally(() => {
     manifestDownloadPromise = null;
   });
 
   return manifestDownloadPromise;
+}
+
+function scheduleAutoInstall(version: string) {
+  sendUpdate({ status: "ready", version });
+  setTimeout(() => {
+    try {
+      installReadyUpdate();
+    } catch (error) {
+      sendUpdate({
+        status: "error",
+        message: error instanceof Error ? error.message : "Could not install update.",
+        version,
+      });
+    }
+  }, AUTO_INSTALL_DELAY_MS);
 }
 
 async function startDownload(): Promise<void> {
@@ -238,6 +254,7 @@ async function checkViaManifest(): Promise<UpdateStatusPayload> {
         version: manifest.version,
       };
       sendUpdate(payload);
+      void downloadPortableFromManifest(manifest.filename, manifest.version);
       return payload;
     }
 

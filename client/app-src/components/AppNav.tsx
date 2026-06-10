@@ -43,7 +43,11 @@ export function AppNav({
         <div>
           <p className="app-nav-username">{profile.username}</p>
           <div className="app-nav-meta">
-            <LevelBadge level={profile.stats.level} elo={profile.stats.elo} size={28} />
+            <LevelBadge
+              level={profile.stats.level}
+              elo={profile.stats.elo}
+              compact
+            />
           </div>
         </div>
       </div>

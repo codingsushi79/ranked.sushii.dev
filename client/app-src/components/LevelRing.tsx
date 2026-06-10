@@ -13,37 +13,50 @@ export function LevelRing({
   elo,
   className,
   size = DEFAULT_SIZE,
+  compact = false,
 }: {
   level?: number;
   elo: number;
   className?: string;
   size?: number;
+  compact?: boolean;
 }) {
   const lvl = level ?? eloToLevel(elo);
   const progress = levelProgress(elo, lvl);
   const color = levelRingColor(lvl);
-  const ring = levelRingGeometry(size);
-  const scale = size / ring.size;
+  const ringSize = compact ? Math.min(size, 22) : size;
+  const stroke = compact ? 3.5 : 6;
+  const innerInset = compact ? 1.5 : 3;
+  const ring = levelRingGeometry(ringSize, stroke, innerInset);
+  const scale = ringSize / ring.size;
   const r = ring.r * scale;
   const c = ring.c * scale;
   const gap = ring.gap * scale;
   const arc = ring.arc * scale;
   const progressArc = Math.max(0, arc * progress);
-  const cx = size / 2;
-  const levelFontSize = Math.max(10, Math.round(size * 0.32));
-  const eloFontSize = Math.max(11, Math.round(size * 0.32));
+  const cx = ringSize / 2;
+  const levelFontSize = compact
+    ? Math.max(8, Math.round(ringSize * 0.34))
+    : Math.max(10, Math.round(ringSize * 0.32));
+  const eloFontSize = compact
+    ? Math.max(10, Math.round(ringSize * 0.45))
+    : Math.max(11, Math.round(ringSize * 0.32));
 
   return (
-    <div className={["level-badge", className].filter(Boolean).join(" ")}>
+    <div
+      className={["level-badge", compact && "level-badge-compact", className]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div
         className="level-badge-ring"
-        style={{ width: size, height: size }}
+        style={{ width: ringSize, height: ringSize }}
         aria-hidden
       >
         <svg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
+          width={ringSize}
+          height={ringSize}
+          viewBox={`0 0 ${ringSize} ${ringSize}`}
           className="level-badge-svg"
           style={{
             transform: `rotate(${ring.rotation}deg)`,

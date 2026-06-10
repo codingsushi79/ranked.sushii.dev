@@ -32,10 +32,10 @@ export function UpdateBanner({
         </p>
         <p className="update-banner-meta">
           {ready
-            ? "Restart to finish updating. Match recording stays paused until you restart."
+            ? "Restarting in a few seconds to finish updating. Match recording stays paused until then."
             : busy
               ? `${update.progress ?? 0}% complete · Match recording is paused until you update.`
-              : `You're on v${appVersion}. Match recording is paused until you install the update.`}
+              : `You're on v${appVersion}. Download starting automatically…`}
         </p>
         {busy && (
           <div className="update-progress" aria-hidden>
@@ -46,14 +46,15 @@ export function UpdateBanner({
           </div>
         )}
       </div>
-      <button
-        type="button"
-        className="btn btn-primary update-banner-action"
-        disabled={busy}
-        onClick={() => void onApply()}
-      >
-        {ready ? "Restart to update" : busy ? "Downloading…" : "Update now"}
-      </button>
+      {ready && (
+        <button
+          type="button"
+          className="btn btn-primary update-banner-action"
+          onClick={() => void onApply()}
+        >
+          Restart now
+        </button>
+      )}
     </div>
   );
 }

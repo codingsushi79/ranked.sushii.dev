@@ -6,15 +6,23 @@ export function LevelBadge({
   elo,
   className,
   size,
+  compact,
 }: {
   level: number;
   elo?: number;
   className?: string;
   size?: number;
+  compact?: boolean;
 }) {
   if (elo !== undefined) {
     return (
-      <LevelRing level={level} elo={elo} className={className} size={size} />
+      <LevelRing
+        level={level}
+        elo={elo}
+        className={className}
+        size={size}
+        compact={compact}
+      />
     );
   }
 
