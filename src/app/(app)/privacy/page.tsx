@@ -15,11 +15,11 @@ const SECTIONS = [
   },
   {
     title: "2. Information we collect",
-    body: "Account information: username, email address, and password (stored as a hash). If you link Steam, we store your Steam ID, display name, and avatar. Gameplay data: Elo rating, wins and losses, placement progress, aggregated stats (kills, deaths, assists, headshots, MVPs, damage), and per-match records including map, mode, scores, and player statistics. Match reports may include Steam IDs and stats for other players in the same lobby when provided by the game client. Technical data: session cookies for login, and standard server logs from our hosting provider (for example request time, IP address, and browser type).",
+    body: "Account information: username and Steam ID, display name, and avatar (from Steam OpenID). Gameplay data: Elo rating, wins and losses, placement progress, aggregated stats (kills, deaths, assists, headshots, MVPs, damage), and per-match records including map, mode, scores, and player statistics. Match reports may include Steam IDs and stats for other players in the same lobby when provided by the game client. Technical data: session cookies for login, and standard server logs from our hosting provider (for example request time, IP address, and browser type).",
   },
   {
     title: "3. How we use information",
-    body: "We use your information to create and secure your account, verify your email, link your Steam identity, calculate and display ranked ratings, show leaderboards and public player profiles, operate seasons and match history, enforce our Terms of Service, and respond to support or abuse reports.",
+    body: "We use your information to create and secure your account, authenticate you through Steam, calculate and display ranked ratings, show leaderboards and public player profiles, operate seasons and match history, enforce our Terms of Service, and respond to support or abuse reports.",
   },
   {
     title: "4. Desktop client",

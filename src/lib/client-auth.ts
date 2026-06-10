@@ -23,7 +23,7 @@ export async function authenticateClient(
     const user = await db.query.users.findFirst({
       where: eq(users.id, credential),
     });
-    if (!user || !user.emailVerified) return null;
+    if (!user) return null;
     if (requireSteam && !user.steamId) return null;
     return { userId: user.id };
   }
@@ -33,7 +33,7 @@ export async function authenticateClient(
   const legacy = await db.query.users.findFirst({
     where: eq(users.clientTokenHash, tokenHash),
   });
-  if (!legacy || !legacy.emailVerified) return null;
+  if (!legacy) return null;
   if (requireSteam && !legacy.steamId) return null;
   return { userId: legacy.id };
 }

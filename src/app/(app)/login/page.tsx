@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { LoadingButton } from "@/components/motion/loading-button";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -12,36 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SteamSignInButton } from "@/components/steam-sign-in-button";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  steam_failed: "Steam sign-in failed. Please try again.",
+  terms: "Accept the Terms of Service on the sign-up page first.",
+};
 
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Login failed");
-      toast.success("Welcome back!");
-      router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/profile");
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const error = searchParams.get("error");
+  const errorMessage = error ? ERROR_MESSAGES[error] : null;
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
@@ -49,63 +29,19 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>Log in</CardTitle>
           <CardDescription>
-            Sign in to your Ranked CS2 account.
+            Sign in with your Steam account. Your ranked profile is tied to Steam
+            and cannot be changed later.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} autoComplete="off">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="login-email">Email</FieldLabel>
-                <Input
-                  id="login-email"
-                  name="login-email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, email: e.target.value }))
-                  }
-                  required
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  data-1p-ignore
-                  data-lpignore="true"
-                  readOnly
-                  onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="login-password">Password</FieldLabel>
-                <Input
-                  id="login-password"
-                  name="login-password"
-                  type="password"
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, password: e.target.value }))
-                  }
-                  required
-                  autoComplete="new-password"
-                  data-1p-ignore
-                  data-lpignore="true"
-                  readOnly
-                  onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
-                />
-              </Field>
-              <LoadingButton
-                type="submit"
-                loading={loading}
-                loadingLabel="Signing in…"
-                className="w-full"
-              >
-                Log in
-              </LoadingButton>
-            </FieldGroup>
-          </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            No account?{" "}
+        <CardContent className="flex flex-col gap-4">
+          {errorMessage && (
+            <Alert>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          <SteamSignInButton next={nextPath} />
+          <p className="text-center text-sm text-muted-foreground">
+            New here?{" "}
             <Link
               href={
                 nextPath
@@ -114,7 +50,7 @@ export default function LoginPage() {
               }
               className="text-foreground underline-offset-4 hover:underline"
             >
-              Sign up
+              Create account
             </Link>
           </p>
         </CardContent>

@@ -7,10 +7,16 @@ import { jsonError } from "@/lib/api";
 
 export async function promoteAdminIfEligible(
   userId: string,
-  email: string,
-  username?: string
+  opts?: { email?: string | null; username?: string }
 ) {
-  if (!isAdminEmail(email) && !(username && isAdminUsername(username))) return;
+  const email = opts?.email;
+  const username = opts?.username;
+  if (
+    !(email && isAdminEmail(email)) &&
+    !(username && isAdminUsername(username))
+  ) {
+    return;
+  }
   await db
     .update(users)
     .set({ isAdmin: true })

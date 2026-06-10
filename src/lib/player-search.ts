@@ -1,4 +1,4 @@
-import { eq, or, ilike, and } from "drizzle-orm";
+import { eq, or, ilike, and, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { users, playerSeasons } from "@/db/schema";
 import { ensureCurrentSeason } from "@/lib/player";
@@ -29,7 +29,7 @@ export async function searchPlayers(query: string, limit = 8) {
     )
     .where(
       and(
-        eq(users.emailVerified, true),
+        isNotNull(users.steamId),
         or(ilike(users.username, pattern), ilike(users.steamName, pattern))
       )
     )

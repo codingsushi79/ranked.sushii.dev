@@ -23,7 +23,7 @@ export async function listAdminUsers(query?: string) {
   return rows.filter(
     (u) =>
       u.username.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
       u.steamName?.toLowerCase().includes(q)
   );
 }

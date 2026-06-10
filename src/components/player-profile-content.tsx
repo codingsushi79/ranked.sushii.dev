@@ -57,7 +57,7 @@ export function PlayerProfileContent({
           <div>
             <h1 className="flex items-center gap-2 text-3xl font-bold">
               {profile.username}
-              {profile.emailVerified && <VerifiedBadge />}
+              {profile.steamId && <VerifiedBadge />}
               {profile.isAdmin && <AdminBadge />}
             </h1>
             <p className="text-muted-foreground">

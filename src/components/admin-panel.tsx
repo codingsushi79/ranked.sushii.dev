@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 type AdminUser = {
   id: string;
   username: string;
-  email: string;
+  email: string | null;
   emailVerified: boolean;
   isAdmin: boolean;
   steamId: string | null;
@@ -137,7 +137,7 @@ export function AdminPanel({
     ? users.filter(
         (u) =>
           u.username.toLowerCase().includes(search.toLowerCase()) ||
-          u.email.toLowerCase().includes(search.toLowerCase())
+          u.email?.toLowerCase().includes(search.toLowerCase())
       )
     : users;
 
@@ -212,7 +212,7 @@ export function AdminPanel({
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm">{u.email}</TableCell>
+                    <TableCell className="text-sm">{u.email ?? "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {u.isAdmin && <Badge>Admin</Badge>}

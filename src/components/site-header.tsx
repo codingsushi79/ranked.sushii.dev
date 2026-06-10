@@ -143,7 +143,7 @@ export function SiteHeader({
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
+              <Button asChild variant="outline">
                 <Link href="/login">Log in</Link>
               </Button>
               <Button asChild>

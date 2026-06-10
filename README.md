@@ -1,6 +1,6 @@
 # Ranked CS2
 
-FaceIT-style ranked tracking for Counter-Strike 2. Sign up, link Steam, download the Windows client, and play — match stats and Elo update automatically each season.
+FaceIT-style ranked tracking for Counter-Strike 2. Sign in with Steam, download the Windows client, and play — match stats and Elo update automatically each season.
 
 ## Stack
 
@@ -12,8 +12,7 @@ FaceIT-style ranked tracking for Counter-Strike 2. Sign up, link Steam, download
 
 ## Features
 
-- Email signup with 6-digit OTP verification (white-background Resend template)
-- Steam profile linking
+- Steam sign-in — one account per Steam ID, created on first sign-in
 - Elo starting at 1000, levels 1–5 (740 Elo bands, 3701+ at level 5)
 - Per-level leaderboards (only after 5 placement games)
 - Season resets every 4 months
@@ -82,12 +81,11 @@ npm start              # dev
 npm run build:win      # optional local installer in client/release/build/
 ```
 
-1. Sign up and verify email
-2. Link Steam on `/profile`
-3. Download the Windows installer from [`/download`](https://ranked.sushii.dev/download) or the [`client-latest` release](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest)
-4. Run the installer — it sets up CS2 GSI + JSI during setup
-5. Open Ranked CS2 and sign in with your browser
-6. Play Competitive or Premier — matches report automatically
+1. Sign in with Steam on the website
+2. Download the Windows installer from [`/download`](https://ranked.sushii.dev/download) or the [`client-latest` release](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest)
+3. Run the installer — it sets up CS2 GSI + JSI during setup
+4. Open Ranked CS2 and sign in with your browser
+5. Play Competitive or Premier — matches report automatically
 
 ## API
 

@@ -15,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: "2. Accounts",
-    body: "You must provide accurate information and keep your sign-in credentials secure. You are responsible for activity on your account. One person per account — shared, smurf, or fully automated accounts used to manipulate ranked stats are not allowed.",
+    body: "Accounts are created by signing in with Steam. Each Steam ID may only be linked to one Ranked CS2 account, and that link cannot be changed later. You are responsible for activity on your account. One person per account — shared, smurf, or fully automated accounts used to manipulate ranked stats are not allowed.",
   },
   {
     title: "3. Fair play",

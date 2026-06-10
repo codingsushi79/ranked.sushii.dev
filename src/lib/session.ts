@@ -24,7 +24,7 @@ export async function getCurrentUser() {
   return {
     id: user.id,
     username: user.username,
-    email: user.email,
+    email: user.email ?? "",
     emailVerified: user.emailVerified,
     isAdmin: user.isAdmin,
     steamId: user.steamId,

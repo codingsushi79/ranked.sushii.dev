@@ -16,8 +16,8 @@ export const users = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     username: text("username").notNull().unique(),
-    email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
+    email: text("email").unique(),
+    passwordHash: text("password_hash"),
     emailVerified: boolean("email_verified").notNull().default(false),
     steamId: text("steam_id").unique(),
     steamName: text("steam_name"),

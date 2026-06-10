@@ -17,7 +17,6 @@ import {
   CLIENT_RELEASE_TAG,
   GITHUB_REPO,
 } from "@/lib/client-download";
-import { VerifyEmailPrompt } from "@/components/verify-email-prompt";
 import { Download, AlertCircle } from "lucide-react";
 import fs from "fs";
 import path from "path";
@@ -48,8 +47,7 @@ export default async function DownloadPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/download");
 
-  const canPlay = user.emailVerified;
-  const canDownload = canPlay && !!user.steamId;
+  const canDownload = !!user.steamId;
   const clientVersion = await getClientVersion();
 
   return (
@@ -62,22 +60,6 @@ export default async function DownloadPage() {
         </p>
       </div>
 
-      {!canPlay && (
-        <div className="mb-6">
-          <VerifyEmailPrompt email={user.email} />
-        </div>
-      )}
-
-      {canPlay && !user.steamId && (
-        <Alert className="mb-6">
-          <AlertCircle />
-          <AlertTitle>Link Steam first</AlertTitle>
-          <AlertDescription>
-            Connect your Steam account on your profile before downloading.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <Card className="animate-in fade-in slide-in-from-bottom-3 duration-700 fill-mode-both delay-150">
         <CardHeader>
           <CardTitle>Ranked CS2 Client (Windows)</CardTitle>
@@ -88,7 +70,6 @@ export default async function DownloadPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-            <li>Link Steam on your profile.</li>
             <li>Download and run the installer — follow the setup wizard.</li>
             <li>Open Ranked CS2 and click <strong>Log in with browser</strong>.</li>
             <li>Launch CS2 — rated matches report automatically.</li>
@@ -106,7 +87,7 @@ export default async function DownloadPage() {
           ) : (
             <Button size="lg" disabled>
               <Download data-icon="inline-start" />
-              Complete setup to download
+              Sign in with Steam to download
             </Button>
           )}
 

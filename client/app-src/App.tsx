@@ -22,11 +22,6 @@ export default function App() {
   const { appVersion, update, checkForUpdates } = useUpdateStatus();
   const [view, setView] = useState<AppView>({ kind: "home" });
 
-  async function openSignup() {
-    const apiUrl = await window.ranked.getApiUrl();
-    await window.ranked.openExternal(`${apiUrl}/signup`);
-  }
-
   async function openSite() {
     const apiUrl = await window.ranked.getApiUrl();
     await window.ranked.openExternal(apiUrl);
@@ -49,7 +44,6 @@ export default function App() {
           loading={auth.loading}
           error={auth.error}
           onLogin={auth.login}
-          onSignup={() => void openSignup()}
         />
       </div>
     );
@@ -81,7 +75,6 @@ export default function App() {
               <ProfileView
                 profile={profile}
                 onNavigate={setView}
-                onRefresh={auth.refresh}
               />
             )}
             {view.kind === "tracking" && (

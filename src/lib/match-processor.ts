@@ -122,7 +122,7 @@ export async function processMatchReport(report: MatchReport) {
 
   if (resolvedPlayers.length < 1) {
     throw new Error(
-      "No ranked account found for this match — link Steam on your profile"
+      "No ranked account found for this match — sign in with Steam on the website"
     );
   }
 

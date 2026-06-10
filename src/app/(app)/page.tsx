@@ -91,9 +91,9 @@ export default async function HomePage() {
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-4">
           {[
-            { step: "1", title: "Sign up", desc: "Create an account — verify email when you're ready to play." },
-            { step: "2", title: "Link Steam", desc: "Connect Steam so your profile is public." },
-            { step: "3", title: "Download", desc: "Get the Windows client and link your account." },
+            { step: "1", title: "Sign in with Steam", desc: "Create your account or log back in with Steam — one account per Steam ID." },
+            { step: "2", title: "Download", desc: "Get the Windows client after signing in." },
+            { step: "3", title: "Connect", desc: "Open the client and sign in with your browser." },
             { step: "4", title: "Play", desc: "Launch CS2 — stats and Elo update automatically." },
           ].map((item, i) => (
             <div
@@ -115,7 +115,7 @@ export default async function HomePage() {
         <div>
           <p className="font-medium">Ready to queue?</p>
           <p className="text-sm text-muted-foreground">
-            Download the client after linking your account.
+            Download the client after signing in with Steam.
           </p>
         </div>
         <Button asChild className="transition-transform hover:scale-[1.02] active:scale-[0.98]">

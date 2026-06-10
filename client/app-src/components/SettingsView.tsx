@@ -59,12 +59,8 @@ export function SettingsView({
             <dd>{profile.username}</dd>
           </div>
           <div>
-            <dt>Email</dt>
-            <dd>{profile.email}</dd>
-          </div>
-          <div>
             <dt>Steam</dt>
-            <dd>{profile.steamName ?? "Not linked"}</dd>
+            <dd>{profile.steamName ?? "—"}</dd>
           </div>
           {status?.clientIdPreview && (
             <div>

@@ -47,8 +47,8 @@ export function startDesktopLogin(apiUrl: string): Promise<string> {
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
         res.end(
           renderCallbackPage({
-            title: "Account linked",
-            message: "Your account is linked. Return to Ranked CS2 to continue.",
+            title: "Signed in",
+            message: "Return to Ranked CS2 to continue.",
             autoCloseSeconds: 5,
           })
         );
