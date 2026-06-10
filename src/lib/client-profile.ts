@@ -38,6 +38,6 @@ export async function getClientProfile(userId: string) {
     })),
     csrep: csrepTrustToJson(profile.csrep),
     live: playerLiveToJson(profile.live),
-    canPlay: !!profile.steamId,
+    canPlay: profile.emailVerified && !!profile.steamId,
   };
 }

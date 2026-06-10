@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const auth = await authenticateClient(req.headers.get("authorization"));
   if (!auth) {
     return jsonError(
-      "Unauthorized — sign in with Steam and use a valid client ID",
+      "Unauthorized — verify your email, link Steam, and use a valid client ID",
       401
     );
   }

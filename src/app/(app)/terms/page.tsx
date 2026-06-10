@@ -15,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: "2. Accounts",
-    body: "Accounts are created by signing in with Steam. Each Steam ID may only be linked to one Ranked CS2 account, and that link cannot be changed later. You are responsible for activity on your account. One person per account — shared, smurf, or fully automated accounts used to manipulate ranked stats are not allowed.",
+    body: "You create an account with a username, email, and password, then link one Steam account during signup. That Steam link is permanent and cannot be changed. You may sign in with email and password or Steam. One person per account — shared, smurf, or fully automated accounts used to manipulate ranked stats are not allowed.",
   },
   {
     title: "3. Fair play",

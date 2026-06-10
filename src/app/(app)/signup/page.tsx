@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { LoadingButton } from "@/components/motion/loading-button";
 import {
   Card,
   CardContent,
@@ -10,14 +12,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SteamSignInButton } from "@/components/steam-sign-in-button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export default function SignupPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
+  const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const termsError = searchParams.get("error") === "terms";
+  const [form, setForm] = useState({ username: "", email: "", password: "" });
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!acceptedTerms) {
+      toast.error("You must accept the Terms of Service");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, acceptedTerms: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Signup failed");
+      toast.success("Account created — link Steam to finish setup");
+      const linkSteamPath =
+        nextPath && nextPath.startsWith("/")
+          ? `/signup/link-steam?next=${encodeURIComponent(nextPath)}`
+          : "/signup/link-steam";
+      router.push(linkSteamPath);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
@@ -25,51 +58,90 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle>Create account</CardTitle>
           <CardDescription>
-            Sign in with Steam to create your Ranked CS2 account. Your Steam
-            identity is permanent — you cannot link a different account later.
+            Sign up with username, email, and password. Next you&apos;ll link
+            Steam once — it cannot be changed later.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {termsError && (
-            <Alert>
-              <AlertDescription>
-                Accept the Terms of Service below before continuing with Steam.
-              </AlertDescription>
-            </Alert>
-          )}
-          <label className="flex cursor-pointer items-start gap-2 text-sm leading-snug">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 rounded border border-input accent-primary"
-            />
-            <span className="text-muted-foreground">
-              I agree to the{" "}
-              <Link
-                href="/terms"
-                target="_blank"
-                className="text-foreground underline-offset-4 hover:underline"
+        <CardContent>
+          <form onSubmit={onSubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
+                <Input
+                  id="username"
+                  value={form.username}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, username: e.target.value }))
+                  }
+                  required
+                  autoComplete="username"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, email: e.target.value }))
+                  }
+                  required
+                  autoComplete="email"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, password: e.target.value }))
+                  }
+                  required
+                  autoComplete="new-password"
+                />
+              </Field>
+              <label className="flex cursor-pointer items-start gap-2 text-sm leading-snug">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 rounded border border-input accent-primary"
+                  required
+                />
+                <span className="text-muted-foreground">
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    className="text-foreground underline-offset-4 hover:underline"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="text-foreground underline-offset-4 hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </span>
+              </label>
+              <LoadingButton
+                type="submit"
+                loading={loading}
+                loadingLabel="Creating account…"
+                disabled={!acceptedTerms}
+                className="w-full"
               >
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link
-                href="/privacy"
-                target="_blank"
-                className="text-foreground underline-offset-4 hover:underline"
-              >
-                Privacy Policy
-              </Link>
-            </span>
-          </label>
-          <SteamSignInButton
-            next={nextPath}
-            terms
-            disabled={!acceptedTerms}
-            label="Continue with Steam"
-          />
-          <p className="text-center text-sm text-muted-foreground">
+                Continue
+              </LoadingButton>
+            </FieldGroup>
+          </form>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href={

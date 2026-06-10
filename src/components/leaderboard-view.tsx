@@ -252,7 +252,7 @@ export function LeaderboardView({
                             </Avatar>
                             <span className="flex items-center gap-1.5 font-medium">
                               {p.username}
-                              {p.steamId && (
+                              {p.emailVerified && (
                                 <VerifiedBadge className="align-middle" />
                               )}
                               {p.isAdmin && <AdminBadge className="align-middle" />}

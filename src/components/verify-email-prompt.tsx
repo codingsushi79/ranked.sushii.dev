@@ -33,8 +33,8 @@ export function VerifyEmailPrompt({ email }: { email: string }) {
       <AlertTitle>Verify your email to play</AlertTitle>
       <AlertDescription className="flex flex-col gap-3">
         <span>
-          You can browse the site without verifying. To link Steam, download the
-          client, and report matches, confirm <strong>{email}</strong> first.
+          You can browse the site without verifying. To download the client and
+          report matches, confirm <strong>{email}</strong> first.
         </span>
         <div className="flex flex-wrap gap-2">
           <LoadingButton

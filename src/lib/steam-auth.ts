@@ -3,52 +3,17 @@ import { cookies } from "next/headers";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { generateToken } from "@/lib/auth";
-import { isAdminUsername } from "@/lib/admin-config";
-import { promoteAdminIfEligible } from "@/lib/admin";
-import {
-  ensureCurrentSeason,
-  getOrCreatePlayerSeason,
-} from "@/lib/player";
 
 export const STEAM_AUTH_COOKIE = "steam_auth";
 const STEAM_AUTH_MAX_AGE = 600;
 
+export type SteamAuthMode = "login" | "link";
+
 export type SteamAuthState = {
   nonce: string;
   next: string | null;
-  terms: boolean;
+  mode: SteamAuthMode;
 };
-
-export function sanitizeUsername(raw: string, steamId: string): string {
-  let base = raw
-    .trim()
-    .replace(/[^a-zA-Z0-9_]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_|_$/g, "");
-
-  if (base.length < 3) {
-    base = `player_${steamId.slice(-6)}`;
-  }
-
-  return base.slice(0, 20);
-}
-
-export async function ensureUniqueUsername(base: string): Promise<string> {
-  let candidate = base;
-  let suffix = 2;
-
-  while (true) {
-    const taken = await db.query.users.findFirst({
-      where: eq(users.username, candidate),
-      columns: { id: true },
-    });
-    if (!taken) return candidate;
-
-    const suffixStr = `_${suffix}`;
-    candidate = `${base.slice(0, Math.max(3, 20 - suffixStr.length))}${suffixStr}`;
-    suffix += 1;
-  }
-}
 
 export async function setSteamAuthCookie(state: SteamAuthState) {
   const cookieStore = await cookies();
@@ -68,7 +33,12 @@ export async function readSteamAuthCookie(): Promise<SteamAuthState | null> {
 
   try {
     const parsed = JSON.parse(raw) as SteamAuthState;
-    if (!parsed.nonce || typeof parsed.terms !== "boolean") return null;
+    if (
+      !parsed.nonce ||
+      (parsed.mode !== "login" && parsed.mode !== "link")
+    ) {
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -85,43 +55,13 @@ export function safeNextPath(next: string | null | undefined): string | null {
   return next;
 }
 
-export async function createUserFromSteam(
-  steamId: string,
-  steamName: string,
-  steamAvatar: string | null
-) {
-  const baseUsername = sanitizeUsername(steamName, steamId);
-  const username = await ensureUniqueUsername(baseUsername);
-
-  const [created] = await db
-    .insert(users)
-    .values({
-      username,
-      email: null,
-      passwordHash: null,
-      emailVerified: true,
-      steamId,
-      steamName,
-      steamAvatar,
-      termsAcceptedAt: new Date(),
-      isAdmin: isAdminUsername(username),
-    })
-    .returning();
-
-  await promoteAdminIfEligible(created.id, { username });
-  const season = await ensureCurrentSeason();
-  await getOrCreatePlayerSeason(created.id, season.id);
-
-  return created;
-}
-
 export function newSteamAuthState(
   next: string | null,
-  terms: boolean
+  mode: SteamAuthMode
 ): SteamAuthState {
   return {
     nonce: generateToken(),
     next,
-    terms,
+    mode,
   };
 }

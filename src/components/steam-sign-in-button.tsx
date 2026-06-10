@@ -1,23 +1,23 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-function steamSignInHref(next: string | null, terms: boolean) {
+function steamSignInHref(next: string | null, link: boolean) {
   const params = new URLSearchParams();
   if (next) params.set("next", next);
-  if (terms) params.set("terms", "1");
+  if (link) params.set("link", "1");
   const query = params.toString();
   return query ? `/api/steam/signin?${query}` : "/api/steam/signin";
 }
 
 export function SteamSignInButton({
   next,
-  terms = false,
+  link = false,
   disabled = false,
   className,
   label = "Sign in with Steam",
 }: {
   next?: string | null;
-  terms?: boolean;
+  link?: boolean;
   disabled?: boolean;
   className?: string;
   label?: string;
@@ -42,7 +42,7 @@ export function SteamSignInButton({
 
   return (
     <Link
-      href={steamSignInHref(safeNext, terms)}
+      href={steamSignInHref(safeNext, link)}
       className={cn(
         "inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171a21] px-4 text-sm font-medium text-white transition-colors hover:bg-[#2a475e]",
         className

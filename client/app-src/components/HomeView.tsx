@@ -29,6 +29,27 @@ export function HomeView({
         </div>
       </header>
 
+      {!profile.canPlay && (
+        <div className="card-surface alert-card">
+          <h3 className="section-label">Setup required</h3>
+          {!profile.steamId && (
+            <p className="ranked-meta">
+              Link Steam on the website to finish signup (one time only).
+            </p>
+          )}
+          {profile.steamId && !profile.emailVerified && (
+            <p className="ranked-meta">Verify your email on the website to play ranked.</p>
+          )}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => void window.ranked.openExternal(`${status?.apiUrl ?? ""}/profile`)}
+          >
+            Finish setup in browser
+          </button>
+        </div>
+      )}
+
       <div className="home-grid">
         <div className="card-surface home-stat-card">
           <div className="home-stat-copy">

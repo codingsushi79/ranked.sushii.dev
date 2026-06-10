@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   });
   if (!auth) {
     return jsonError(
-      "Unauthorized — sign in with Steam from the desktop app",
+      "Unauthorized — verify your email and sign in again from the desktop app",
       401
     );
   }
