@@ -17,10 +17,6 @@ export function useUpdateStatus() {
     return next;
   }, []);
 
-  const applyUpdate = useCallback(async () => {
-    await window.ranked.installUpdate();
-  }, []);
-
   const updateRequired =
     update.status === "available" ||
     update.status === "downloading" ||
@@ -31,6 +27,5 @@ export function useUpdateStatus() {
     update,
     updateRequired,
     checkForUpdates,
-    applyUpdate,
   };
 }

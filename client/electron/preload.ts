@@ -10,7 +10,6 @@ export interface RankedApi {
   getApiUrl: () => Promise<string>;
   getAppVersion: () => Promise<string>;
   checkForUpdates: () => Promise<UpdateStatusPayload>;
-  installUpdate: () => Promise<void>;
   minimize: () => Promise<void>;
   close: () => Promise<void>;
   openExternal: (url: string) => Promise<void>;
@@ -26,7 +25,6 @@ const api: RankedApi = {
   getApiUrl: () => ipcRenderer.invoke("ranked:api-url"),
   getAppVersion: () => ipcRenderer.invoke("app:version"),
   checkForUpdates: () => ipcRenderer.invoke("update:check"),
-  installUpdate: () => ipcRenderer.invoke("update:install"),
   minimize: () => ipcRenderer.invoke("window:minimize"),
   close: () => ipcRenderer.invoke("window:close"),
   openExternal: (url) => ipcRenderer.invoke("shell:open", url),

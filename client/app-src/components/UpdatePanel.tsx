@@ -5,10 +5,9 @@ interface UpdatePanelProps {
   appVersion: string;
   update: UpdateStatusPayload;
   onCheck: () => Promise<UpdateStatusPayload>;
-  onInstall: () => Promise<void>;
 }
 
-export function UpdatePanel({ appVersion, update, onCheck, onInstall }: UpdatePanelProps) {
+export function UpdatePanel({ appVersion, update, onCheck }: UpdatePanelProps) {
   const [busy, setBusy] = useState(false);
 
   const handleCheck = async () => {
@@ -20,11 +19,6 @@ export function UpdatePanel({ appVersion, update, onCheck, onInstall }: UpdatePa
     }
   };
 
-  const canApply =
-    update.status === "available" ||
-    update.status === "ready" ||
-    update.status === "downloading";
-
   return (
     <section className="settings-section">
       <h3>Updates</h3>
@@ -35,19 +29,6 @@ export function UpdatePanel({ appVersion, update, onCheck, onInstall }: UpdatePa
         <button className="ghost-button" disabled={busy} onClick={handleCheck}>
           {busy ? "Checking..." : "Check for updates"}
         </button>
-        {canApply && (
-          <button
-            className="primary-button"
-            disabled={update.status === "downloading"}
-            onClick={() => void onInstall()}
-          >
-            {update.status === "ready"
-              ? "Restart to update"
-              : update.status === "downloading"
-                ? "Downloading…"
-                : "Update now"}
-          </button>
-        )}
       </div>
     </section>
   );
@@ -58,11 +39,11 @@ function formatUpdateMessage(update: UpdateStatusPayload) {
     case "checking":
       return "Checking for updates...";
     case "available":
-      return `Update v${update.version} is available. Match recording stays paused until you install it.`;
+      return `Update v${update.version} is available. Downloading automatically…`;
     case "downloading":
       return `Downloading update v${update.version}… ${update.progress ?? 0}%`;
     case "ready":
-      return `Update v${update.version} is ready. Restart to finish installing.`;
+      return `Update v${update.version} is ready. Restarting automatically…`;
     case "error":
       return update.message ?? "Update check failed.";
     case "idle":

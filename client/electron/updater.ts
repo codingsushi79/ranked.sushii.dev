@@ -1,6 +1,5 @@
-import { app, ipcMain } from "electron";
+import { app, ipcMain, shell } from "electron";
 import { autoUpdater } from "electron-updater";
-import { spawn } from "child_process";
 import { createWriteStream } from "fs";
 import fs from "fs";
 import path from "path";
@@ -16,8 +15,8 @@ let eventsAttached = false;
 let updaterConfigured = false;
 let manifestDownloadPromise: Promise<void> | null = null;
 let currentUpdateStatus: UpdateStatusPayload = { status: "idle" };
-let pendingManifest: { filename: string; version: string } | null = null;
 let pendingPortablePath: string | null = null;
+let installPending = false;
 
 function readUpdateUrl() {
   const bakedPath = path.join(__dirname, "update-config.baked.json");
@@ -185,49 +184,36 @@ async function downloadPortableFromManifest(filename: string, version: string) {
 }
 
 function scheduleAutoInstall(version: string) {
+  if (installPending) {
+    return;
+  }
+
+  installPending = true;
   sendUpdate({ status: "ready", version });
   setTimeout(() => {
-    try {
-      installReadyUpdate();
-    } catch (error) {
+    void installReadyUpdate().catch((error) => {
+      installPending = false;
       sendUpdate({
         status: "error",
         message: error instanceof Error ? error.message : "Could not install update.",
         version,
       });
-    }
+    });
   }, AUTO_INSTALL_DELAY_MS);
 }
 
-async function startDownload(): Promise<void> {
-  if (currentUpdateStatus.status === "downloading") {
-    return;
-  }
-
-  if (pendingManifest) {
-    await downloadPortableFromManifest(
-      pendingManifest.filename,
-      pendingManifest.version
-    );
-    return;
-  }
-
-  if (!updaterConfigured) {
-    throw new Error("Update download is unavailable.");
-  }
-
-  sendUpdate({
-    status: "downloading",
-    version: currentUpdateStatus.version,
-    progress: 0,
-  });
-  await autoUpdater.downloadUpdate();
-}
-
-function installReadyUpdate() {
+async function installReadyUpdate() {
   if (pendingPortablePath) {
-    spawn(pendingPortablePath, [], { detached: true, stdio: "ignore" }).unref();
-    app.quit();
+    if (!fs.existsSync(pendingPortablePath)) {
+      throw new Error("Downloaded update file is missing.");
+    }
+
+    const openError = await shell.openPath(pendingPortablePath);
+    if (openError) {
+      throw new Error(openError);
+    }
+
+    setTimeout(() => app.quit(), 1_000);
     return;
   }
 
@@ -245,10 +231,6 @@ async function checkViaManifest(): Promise<UpdateStatusPayload> {
   try {
     const manifest = await fetchManifest();
     if (compareVersions(manifest.version, currentVersion) > 0) {
-      pendingManifest = {
-        filename: manifest.filename,
-        version: manifest.version,
-      };
       const payload: UpdateStatusPayload = {
         status: "available",
         version: manifest.version,
@@ -258,7 +240,6 @@ async function checkViaManifest(): Promise<UpdateStatusPayload> {
       return payload;
     }
 
-    pendingManifest = null;
     pendingPortablePath = null;
 
     const payload: UpdateStatusPayload = {
@@ -299,7 +280,6 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
     const latestVersion = result?.updateInfo?.version;
 
     if (latestVersion && compareVersions(latestVersion, currentVersion) > 0) {
-      pendingManifest = null;
       pendingPortablePath = null;
       const payload: UpdateStatusPayload = {
         status: "available",
@@ -309,7 +289,6 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
       return payload;
     }
 
-    pendingManifest = null;
     pendingPortablePath = null;
     const payload: UpdateStatusPayload = {
       status: "idle",
@@ -324,26 +303,6 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
 
 export function initAutoUpdater() {
   ipcMain.handle("update:check", () => performUpdateCheck());
-
-  ipcMain.handle("update:install", async () => {
-    try {
-      if (currentUpdateStatus.status === "ready") {
-        installReadyUpdate();
-        return;
-      }
-
-      if (currentUpdateStatus.status === "available") {
-        await startDownload();
-        return;
-      }
-    } catch (error) {
-      sendUpdate({
-        status: "error",
-        message: error instanceof Error ? error.message : "Could not install update.",
-        version: currentUpdateStatus.version,
-      });
-    }
-  });
 
   if (!app.isPackaged) {
     return;

@@ -62,7 +62,7 @@ export function MatchTrackingPanel({ status }: { status: BridgeStatus | null }) 
       </div>
       <p className="ranked-meta">
         {updateRequired
-          ? "Install the latest app update before rated matches can be recorded."
+          ? "An update is installing — rated matches will record again after the app restarts."
           : ready
             ? status?.cs2Connected
               ? "CS2 connected · matches report automatically after rated games"

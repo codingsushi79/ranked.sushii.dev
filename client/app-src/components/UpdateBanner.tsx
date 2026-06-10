@@ -3,11 +3,9 @@ import type { UpdateStatusPayload } from "../types";
 export function UpdateBanner({
   appVersion,
   update,
-  onApply,
 }: {
   appVersion: string;
   update: UpdateStatusPayload;
-  onApply: () => Promise<void>;
 }) {
   if (
     update.status !== "available" &&
@@ -32,9 +30,9 @@ export function UpdateBanner({
         </p>
         <p className="update-banner-meta">
           {ready
-            ? "Restarting in a few seconds to finish updating. Match recording stays paused until then."
+            ? "Restarting automatically in a few seconds. Match recording stays paused until then."
             : busy
-              ? `${update.progress ?? 0}% complete · Match recording is paused until you update.`
+              ? `${update.progress ?? 0}% complete · Match recording is paused until the update finishes.`
               : `You're on v${appVersion}. Download starting automatically…`}
         </p>
         {busy && (
@@ -46,15 +44,6 @@ export function UpdateBanner({
           </div>
         )}
       </div>
-      {ready && (
-        <button
-          type="button"
-          className="btn btn-primary update-banner-action"
-          onClick={() => void onApply()}
-        >
-          Restart now
-        </button>
-      )}
     </div>
   );
 }

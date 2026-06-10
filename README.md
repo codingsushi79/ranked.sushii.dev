@@ -65,12 +65,6 @@ npm run dev
 
 MIT — see [LICENSE](./LICENSE). The Windows desktop client source lives in `client/` and is included under the same license.
 
-## Code signing (SignPath Foundation)
-
-Free Authenticode signing for the Windows client via [SignPath Foundation](https://signpath.org/) (OSS program). Setup checklist: **[docs/SIGNPATH.md](./docs/SIGNPATH.md)**. Public policy: `/code-signing` on the site and [docs/CODE_SIGNING.md](./docs/CODE_SIGNING.md).
-
-Signed releases are built by GitHub Actions (`.github/workflows/release-client.yml`) on `windows-latest`, then submitted to SignPath for manual approval.
-
 ## Desktop client
 
 Pushes to `main` build the Windows installer in GitHub Actions (`.github/workflows/build-client.yml`) and publish it to the [`client-latest` release](https://github.com/codingsushi79/ranked.sushii.dev/releases/tag/client-latest). The site download page links there — no manual exe upload to Vercel.

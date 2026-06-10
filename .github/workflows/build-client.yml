@@ -74,6 +74,7 @@ jobs:
             Download `ranked-cs2-client-setup.exe` below, or from [ranked.sushii.dev/download](https://ranked.sushii.dev/download).
           files: |
             client/release/build/ranked-cs2-client-setup.exe
+            client/release/build/latest.yml
             client/release/build/manifest.json
           overwrite: true
           make_latest: true

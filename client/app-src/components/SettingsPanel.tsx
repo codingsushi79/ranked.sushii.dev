@@ -18,7 +18,6 @@ interface SettingsPanelProps {
   onTwitchLogout: () => Promise<void>;
   onInstallGsi: () => Promise<void>;
   onCheckForUpdates: () => Promise<UpdateStatusPayload>;
-  onInstallUpdate: () => Promise<void>;
 }
 
 export function SettingsPanel({
@@ -35,7 +34,6 @@ export function SettingsPanel({
   onTwitchLogout,
   onInstallGsi,
   onCheckForUpdates,
-  onInstallUpdate,
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState(settings);
   const [busy, setBusy] = useState(false);
@@ -154,7 +152,6 @@ export function SettingsPanel({
         appVersion={appVersion}
         update={updateStatus}
         onCheck={onCheckForUpdates}
-        onInstall={onInstallUpdate}
       />
 
       <div className="settings-footer">

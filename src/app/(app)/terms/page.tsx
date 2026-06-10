@@ -22,7 +22,7 @@ const SECTIONS = [
   },
   {
     title: "4. Desktop client",
-    body: "The Ranked CS2 client reports match statistics to your linked account. You may only use the client on accounts you own and have linked through the Service. Tampering with match reports, sharing your Client ID, or submitting falsified data is prohibited. Windows installers are built from our open-source repository; see the code signing policy at /code-signing.",
+    body: "The Ranked CS2 client reports match statistics to your linked account. You may only use the client on accounts you own and have linked through the Service. Tampering with match reports, sharing your Client ID, or submitting falsified data is prohibited. Windows installers are built from our open-source repository on GitHub.",
   },
   {
     title: "5. Community conduct",

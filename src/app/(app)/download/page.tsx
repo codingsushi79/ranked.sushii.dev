@@ -116,10 +116,15 @@ export default async function DownloadPage() {
             <AlertDescription>
               Windows may show &quot;Windows protected your PC&quot; for unsigned
               builds. Click <strong>More info</strong> → <strong>Run anyway</strong>.
-              Signed releases list <strong>SignPath Foundation</strong> as publisher — see our{" "}
-              <Link href="/code-signing" className="underline underline-offset-4">
-                code signing policy
-              </Link>
+              Installers are built from our{" "}
+              <a
+                href="https://github.com/codingsushi79/ranked.sushii.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-4"
+              >
+                open-source repository
+              </a>
               .
             </AlertDescription>
           </Alert>

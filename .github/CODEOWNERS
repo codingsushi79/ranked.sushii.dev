@@ -1,3 +1,1 @@
-# Protect SignPath policy and release workflow (replace @YOUR_GITHUB_USERNAME).
-.signpath/ @codingsushi79
 .github/workflows/release-client.yml @codingsushi79

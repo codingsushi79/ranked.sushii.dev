@@ -1,8 +1,0 @@
-# SignPath GitHub policy — rename this file if your SignPath project slug differs.
-# Path must be: .signpath/policies/<project-slug>/<signing-policy-slug>.yml
-
-github-policies:
-  runners:
-    require_github_hosted: true
-  build:
-    disallow_reruns: true

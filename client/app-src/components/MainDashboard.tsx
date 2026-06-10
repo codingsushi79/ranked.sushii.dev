@@ -61,7 +61,7 @@ export function MainDashboard({
 
       {updateStatus.status === "ready" && (
         <div className="toast toast-info">
-          Update v{updateStatus.version} ready — restart to finish updating.
+          Update v{updateStatus.version} ready — restarting automatically…
         </div>
       )}
 
