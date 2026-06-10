@@ -1,4 +1,4 @@
-import { LevelRingWithElo } from "./LevelRing";
+import { LevelBadge } from "./LevelBadge";
 import { CsrepTrustBadge } from "./CsrepTrustBadge";
 import { MatchTrackingPanel } from "./MatchTrackingPanel";
 import type { AppView, BridgeStatus, ClientProfile } from "../lib/types";
@@ -27,6 +27,9 @@ export function HomeView({
               <CsrepTrustBadge trust={profile.csrep} />
             </div>
           )}
+          <div className="profile-trust-row">
+            <LevelBadge level={profile.stats.level} elo={profile.stats.elo} />
+          </div>
         </div>
       </header>
 
@@ -51,8 +54,8 @@ export function HomeView({
 
       <div className="home-grid">
         <div className="card-surface home-stat-card">
-          <LevelRingWithElo elo={profile.stats.elo} level={profile.stats.level} size={72} />
           <div className="home-stat-copy">
+            <p className="section-label">Record</p>
             <p className="home-stat-value">
               {profile.stats.wins}W · {profile.stats.losses}L
             </p>

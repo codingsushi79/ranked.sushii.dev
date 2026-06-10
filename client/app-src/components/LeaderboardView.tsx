@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { AppView, LeaderboardPlayer } from "../lib/types";
 import { initials } from "../lib/types";
 import { CsrepTrustBadge } from "./CsrepTrustBadge";
+import { LevelBadge } from "./LevelBadge";
 import { MAX_LEVEL } from "../../shared/elo";
 
 type ViewerInfo = {
@@ -76,7 +77,7 @@ export function LeaderboardView({
             className={`level-tab ${level === lv ? "is-active" : ""}`}
             onClick={() => setLevel(lv)}
           >
-            {lv}
+            Level {lv}
           </button>
         ))}
       </div>
@@ -95,6 +96,7 @@ export function LeaderboardView({
                 <th>#</th>
                 <th>Player</th>
                 <th>Trust</th>
+                <th>Level</th>
                 <th>Elo</th>
                 <th>W/L</th>
                 <th>K/D</th>
@@ -126,7 +128,10 @@ export function LeaderboardView({
                   <td>
                     <CsrepTrustBadge trust={p.csrep} />
                   </td>
-                  <td>L{p.level} · {p.elo}</td>
+                  <td>
+                    <LevelBadge level={p.level} elo={p.elo} />
+                  </td>
+                  <td className="tabular-nums">{p.elo}</td>
                   <td>
                     {p.wins}/{p.losses}
                   </td>

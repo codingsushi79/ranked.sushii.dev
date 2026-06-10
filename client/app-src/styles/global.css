@@ -964,37 +964,56 @@ input {
   color: var(--muted);
 }
 
-.level-ring {
-  position: relative;
+.level-badge {
   display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.level-ring-svg {
+.level-badge-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.level-badge-svg {
   display: block;
-  transform-origin: center;
 }
 
-.level-ring-num {
+.level-badge-track {
+  color: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+
+.level-badge-progress {
+  transition: stroke-dasharray 500ms ease-out;
+}
+
+.level-badge-level {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.level-ring-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.level-ring-elo {
+.level-badge-elo {
   font-family: var(--mono);
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.level-badge-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 .ranked-pill {
@@ -1504,22 +1523,34 @@ input {
 .search-result {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 10px 12px;
   border: none;
   background: transparent;
   color: var(--text);
+  text-align: left;
   cursor: pointer;
   border-radius: 10px;
+}
+
+.search-result-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-result-badge {
+  flex-shrink: 0;
 }
 
 .search-result:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.search-result span {
+.search-result-copy span {
   color: var(--muted);
   font-size: 12px;
 }

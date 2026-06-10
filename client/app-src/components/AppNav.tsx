@@ -1,5 +1,6 @@
 import type { AppView, ClientProfile } from "../lib/types";
 import { initials } from "../lib/types";
+import { LevelBadge } from "./LevelBadge";
 
 const NAV: { kind: AppView["kind"]; label: string }[] = [
   { kind: "home", label: "Home" },
@@ -41,7 +42,9 @@ export function AppNav({
         </div>
         <div>
           <p className="app-nav-username">{profile.username}</p>
-          <p className="app-nav-meta">Level {profile.stats.level}</p>
+          <div className="app-nav-meta">
+            <LevelBadge level={profile.stats.level} elo={profile.stats.elo} size={28} />
+          </div>
         </div>
       </div>
 

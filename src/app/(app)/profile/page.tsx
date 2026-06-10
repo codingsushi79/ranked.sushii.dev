@@ -91,11 +91,7 @@ export default async function ProfilePage({
               </div>
             </div>
           </div>
-          <ProfileActions
-            canPlay={canPlay}
-            hasSteam={!!user.steamId}
-            clientId={user.id}
-          />
+          <ProfileActions canPlay={canPlay} hasSteam={!!user.steamId} />
         </div>
 
         <p className="text-sm text-muted-foreground animate-in fade-in duration-500 fill-mode-both delay-75">

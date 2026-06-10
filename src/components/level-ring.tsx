@@ -1,4 +1,4 @@
-import { eloToLevel, levelProgress, levelRingColor, levelRingGeometry } from "@/lib/elo";
+import { eloToLevel, levelProgress, levelRingColor, levelRingGeometry, MAX_LEVEL } from "@/lib/elo";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_SIZE = 44;
@@ -66,7 +66,7 @@ export function LevelRing({
         </svg>
         <span
           className="absolute inset-0 flex items-center justify-center font-mono text-sm font-bold tabular-nums"
-          style={{ color: lvl >= 15 ? color : undefined }}
+          style={{ color: lvl >= MAX_LEVEL ? color : undefined }}
         >
           {lvl}
         </span>

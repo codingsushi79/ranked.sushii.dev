@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { AppView, PublicPlayer } from "../lib/types";
 import { formatMap, initials } from "../lib/types";
-import { LevelRingWithElo } from "./LevelRing";
+import { LevelBadge } from "./LevelBadge";
 import { CsrepTrustBadge, CsrepTrustPanel } from "./CsrepTrustBadge";
 
 export function PlayerView({
@@ -49,9 +49,11 @@ export function PlayerView({
                 <CsrepTrustBadge trust={player.csrep} />
               </div>
             )}
+            <div className="profile-trust-row">
+              <LevelBadge level={player.stats.level} elo={player.stats.elo} />
+            </div>
           </div>
         </div>
-        <LevelRingWithElo elo={player.stats.elo} level={player.stats.level} size={64} />
       </header>
 
       <div className="stat-grid stat-grid-compact">

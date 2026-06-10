@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import type { AppView } from "../lib/types";
+import { LevelBadge } from "./LevelBadge";
 
-type SearchResult = { username: string; steamName: string | null };
+type SearchResult = {
+  username: string;
+  steamName: string | null;
+  level: number;
+  elo: number;
+};
 
 export function PlayerSearch({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const [query, setQuery] = useState("");
@@ -46,8 +52,11 @@ export function PlayerSearch({ onNavigate }: { onNavigate: (view: AppView) => vo
                   onNavigate({ kind: "player", username: p.username });
                 }}
               >
-                <strong>{p.username}</strong>
-                {p.steamName && <span>{p.steamName}</span>}
+                <div className="search-result-copy">
+                  <strong>{p.username}</strong>
+                  {p.steamName && <span>{p.steamName}</span>}
+                </div>
+                <LevelBadge level={p.level} elo={p.elo} className="search-result-badge" />
               </button>
             </li>
           ))}

@@ -21,6 +21,10 @@ export function levelRange(level: number): { min: number; max: number } {
   };
 }
 
+export function levelLabel(level: number): string {
+  return `Level ${level}`;
+}
+
 export function levelProgress(elo: number, level?: number): number {
   const lvl = level ?? eloToLevel(elo);
   if (lvl >= MAX_LEVEL) return 1;

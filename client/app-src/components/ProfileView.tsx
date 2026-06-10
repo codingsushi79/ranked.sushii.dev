@@ -1,4 +1,4 @@
-import { LevelRingWithElo } from "./LevelRing";
+import { LevelBadge } from "./LevelBadge";
 import { CsrepTrustBadge, CsrepTrustPanel } from "./CsrepTrustBadge";
 import type { AppView, ClientProfile } from "../lib/types";
 import { formatMap } from "../lib/types";
@@ -42,9 +42,11 @@ export function ProfileView({
                 <CsrepTrustBadge trust={profile.csrep} />
               </div>
             )}
+            <div className="profile-trust-row">
+              <LevelBadge level={profile.stats.level} elo={profile.stats.elo} />
+            </div>
           </div>
         </div>
-        <LevelRingWithElo elo={profile.stats.elo} level={profile.stats.level} size={64} />
       </header>
 
       {!profile.canPlay && (
