@@ -7,19 +7,18 @@ const NAV: { kind: AppView["kind"]; label: string }[] = [
   { kind: "leaderboard", label: "Leaderboard" },
   { kind: "profile", label: "Profile" },
   { kind: "tracking", label: "Tracking" },
+  { kind: "settings", label: "Settings" },
 ];
 
 export function AppNav({
   view,
   profile,
   onNavigate,
-  onLogout,
   onOpenSite,
 }: {
   view: AppView;
   profile: ClientProfile;
   onNavigate: (view: AppView) => void;
-  onLogout: () => void;
   onOpenSite: () => void;
 }) {
   return (
@@ -68,9 +67,6 @@ export function AppNav({
       <div className="app-nav-footer">
         <button type="button" className="btn btn-secondary app-nav-action" onClick={onOpenSite}>
           Open website
-        </button>
-        <button type="button" className="btn btn-secondary app-nav-action" onClick={onLogout}>
-          Sign out
         </button>
       </div>
     </aside>

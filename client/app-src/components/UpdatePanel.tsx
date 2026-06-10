@@ -34,7 +34,7 @@ export function UpdatePanel({ appVersion, update, onCheck }: UpdatePanelProps) {
   );
 }
 
-function formatUpdateMessage(update: UpdateStatusPayload) {
+export function formatUpdateMessage(update: UpdateStatusPayload) {
   switch (update.status) {
     case "checking":
       return "Checking for updates...";

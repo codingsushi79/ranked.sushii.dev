@@ -8,6 +8,7 @@ import { MatchView } from "./components/MatchView";
 import { PlayerSearch } from "./components/PlayerSearch";
 import { PlayerView } from "./components/PlayerView";
 import { ProfileView } from "./components/ProfileView";
+import { SettingsView } from "./components/SettingsView";
 import { TitleBar } from "./components/TitleBar";
 import type { AppView } from "./lib/types";
 import { useAuth } from "./lib/useAuth";
@@ -18,7 +19,7 @@ import { UpdateBanner } from "./components/UpdateBanner";
 export default function App() {
   const auth = useAuth();
   const { status } = useBridgeStatus();
-  const { appVersion, update } = useUpdateStatus();
+  const { appVersion, update, checkForUpdates } = useUpdateStatus();
   const [view, setView] = useState<AppView>({ kind: "home" });
 
   async function openSignup() {
@@ -64,7 +65,6 @@ export default function App() {
           view={view}
           profile={profile}
           onNavigate={setView}
-          onLogout={() => void auth.logout()}
           onOpenSite={() => void openSite()}
         />
         <main className="app-main">
@@ -94,6 +94,18 @@ export default function App() {
                 </header>
                 <MatchTrackingPanel status={status} />
               </div>
+            )}
+            {view.kind === "settings" && (
+              <SettingsView
+                profile={profile}
+                status={status}
+                appVersion={appVersion}
+                update={update}
+                onCheckForUpdates={checkForUpdates}
+                onLogout={() => void auth.logout()}
+                onOpenSite={() => void openSite()}
+                onNavigate={setView}
+              />
             )}
             {view.kind === "player" && (
               <PlayerView username={view.username} onNavigate={setView} />

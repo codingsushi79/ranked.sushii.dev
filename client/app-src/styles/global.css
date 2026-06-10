@@ -1673,6 +1673,52 @@ input {
   color: var(--muted);
 }
 
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-card-danger {
+  border-color: color-mix(in srgb, var(--danger) 24%, transparent);
+}
+
+.settings-dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.settings-dl div {
+  display: grid;
+  gap: 2px;
+}
+
+.settings-dl dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settings-dl dd {
+  margin: 0;
+  font-size: 14px;
+}
+
+.settings-mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.settings-signout {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+}
+
 .csrep-badge {
   display: inline-flex;
   align-items: center;

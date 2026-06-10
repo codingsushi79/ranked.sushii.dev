@@ -3,6 +3,7 @@ export type AppView =
   | { kind: "leaderboard" }
   | { kind: "profile" }
   | { kind: "tracking" }
+  | { kind: "settings" }
   | { kind: "player"; username: string }
   | { kind: "match"; id: string };
 
