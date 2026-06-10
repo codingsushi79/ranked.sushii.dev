@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { AppView, LeaderboardPlayer } from "../lib/types";
 import { initials } from "../lib/types";
 import { CsrepTrustBadge } from "./CsrepTrustBadge";
+import { MAX_LEVEL } from "../../shared/elo";
 
 type ViewerInfo = {
   username: string;
@@ -68,7 +69,7 @@ export function LeaderboardView({
         >
           Overall
         </button>
-        {Array.from({ length: 20 }, (_, i) => i + 1).map((lv) => (
+        {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((lv) => (
           <button
             key={lv}
             type="button"

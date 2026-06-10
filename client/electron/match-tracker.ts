@@ -5,6 +5,7 @@ import { GsiServer, type RawGsiPayload } from "./gsi-server";
 import { GSI_CONFIG_FILENAME, writeGsiConfig } from "./gsi-config";
 import { buildMatchReportFromGsi } from "./gsi-match-report";
 import { isAllowedMatchMode, normalizeMatchMode } from "./match-modes";
+import { isMatchRecordingBlocked } from "./updater";
 
 const BRIDGE_URL = "http://127.0.0.1:27500";
 const GSI_PORT = 3001;
@@ -167,6 +168,17 @@ export class MatchTracker {
   }
 
   private async handleGsi(payload: RawGsiPayload) {
+    if (isMatchRecordingBlocked()) {
+      if (this.matchSession) {
+        await this.onMatchEnd();
+      }
+      this.cs2Connected = true;
+      this.inGame = payload.map?.phase === "live" || payload.map?.phase === "gameover";
+      this.currentMode = this.inGame ? (payload.map?.mode ?? null) : null;
+      await this.syncCs2Status();
+      return;
+    }
+
     const mapPhase = payload.map?.phase ?? null;
     const mapName = payload.map?.name ?? "unknown";
 
@@ -231,6 +243,8 @@ export class MatchTracker {
   }
 
   private async onMatchStart(mapName: string, mode: string) {
+    if (isMatchRecordingBlocked()) return;
+
     this.tracking = true;
     this.matchSession = {
       externalId: `gsi-${Date.now()}`,
@@ -250,6 +264,7 @@ export class MatchTracker {
 
   private async tryReportMatch(): Promise<void> {
     if (!this.matchSession || this.matchSession.reported) return;
+    if (isMatchRecordingBlocked()) return;
 
     const reportPayload =
       this.matchSession.lastLivePayload ??
@@ -289,18 +304,30 @@ export class MatchTracker {
   }
 
   private async syncCs2Status() {
-    const inRatedMatch = this.inGame && isAllowedMatchMode(this.currentMode);
+    const inRatedMatch =
+      this.inGame && isAllowedMatchMode(this.currentMode) && !isMatchRecordingBlocked();
     await bridgePost("/cs2/status", {
       connected: this.cs2Connected,
       inMatch: this.inGame,
       inRatedMatch,
       matchMode: this.currentMode,
       gsiInstalled: this.gsiInstalled,
+      updateRequired: isMatchRecordingBlocked(),
     });
   }
 
   private startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
+      if (isMatchRecordingBlocked()) {
+        if (this.matchSession) {
+          void this.onMatchEnd();
+        } else if (this.tracking) {
+          void this.onMatchEnd();
+        }
+      }
+
+      void this.syncCs2Status();
+
       const game = this.gsi?.getSnapshot();
       if (!game?.lastUpdate) return;
 

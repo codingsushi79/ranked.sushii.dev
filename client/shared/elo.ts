@@ -1,19 +1,23 @@
-export const MAX_LEVEL = 20;
+export const MAX_LEVEL = 5;
+
+export const TOP_FINITE_ELO = 3700;
+export const MAX_LEVEL_ELO_MIN = 3701;
+export const LEVEL_BAND_WIDTH = TOP_FINITE_ELO / MAX_LEVEL;
 
 export function eloToLevel(elo: number): number {
-  if (elo <= 100) return 1;
-  const level = Math.floor((elo - 101) / 200) + 2;
-  return Math.min(level, MAX_LEVEL);
+  if (elo >= MAX_LEVEL_ELO_MIN) return MAX_LEVEL;
+  if (elo <= 0) return 1;
+  return Math.min(MAX_LEVEL, Math.ceil(elo / LEVEL_BAND_WIDTH));
 }
 
 export function levelRange(level: number): { min: number; max: number } {
-  if (level <= 1) return { min: 0, max: 100 };
-  if (level >= MAX_LEVEL) {
-    return { min: 101 + (MAX_LEVEL - 2) * 200, max: Infinity };
+  const lvl = Math.max(1, Math.min(level, MAX_LEVEL));
+  if (lvl >= MAX_LEVEL) {
+    return { min: (MAX_LEVEL - 1) * LEVEL_BAND_WIDTH + 1, max: Infinity };
   }
   return {
-    min: 101 + (level - 2) * 200,
-    max: 100 + (level - 1) * 200,
+    min: lvl === 1 ? 0 : (lvl - 1) * LEVEL_BAND_WIDTH + 1,
+    max: lvl * LEVEL_BAND_WIDTH,
   };
 }
 

@@ -14,7 +14,7 @@ FaceIT-style ranked tracking for Counter-Strike 2. Sign up, link Steam, download
 
 - Email signup with 6-digit OTP verification (white-background Resend template)
 - Steam profile linking
-- Elo starting at 1000, levels 1–20 (200 Elo bands after level 2)
+- Elo starting at 1000, levels 1–5 (740 Elo bands, 3701+ at level 5)
 - Per-level leaderboards (only after 5 placement games)
 - Season resets every 4 months
 - Fair Elo: team-based expected score, K-factor scaling, performance modifier from K/D and ADR
@@ -123,8 +123,8 @@ Requires `Authorization: Bearer <client_id>` (your account UUID from Profile).
 
 | Level | Elo range |
 |-------|-----------|
-| 1 | 0 – 100 |
-| 2 | 101 – 300 |
-| 3 | 301 – 500 |
-| … | +200 per level |
-| 20 | 3701+ (uncapped Elo) |
+| 1 | 0 – 740 |
+| 2 | 741 – 1480 |
+| 3 | 1481 – 2220 |
+| 4 | 2221 – 2960 |
+| 5 | 2961+ (uncapped Elo) |

@@ -1,22 +1,27 @@
 export const PLACEMENT_GAMES = 5;
 export const STARTING_ELO = 1000;
-export const MAX_LEVEL = 20;
+export const MAX_LEVEL = 5;
 
-/** Level thresholds: L1 0–100, L2 101–300, then +200 per level through L20 (3701–3900). */
+/** Highest finite Elo in a bounded band; max level continues from MAX_LEVEL_ELO_MIN. */
+export const TOP_FINITE_ELO = 3700;
+export const MAX_LEVEL_ELO_MIN = 3701;
+export const LEVEL_BAND_WIDTH = TOP_FINITE_ELO / MAX_LEVEL;
+
+/** Level thresholds: five equal bands of 740 Elo (0–3700), then 3701+ at level 5. */
 export function eloToLevel(elo: number): number {
-  if (elo <= 100) return 1;
-  const level = Math.floor((elo - 101) / 200) + 2;
-  return Math.min(level, MAX_LEVEL);
+  if (elo >= MAX_LEVEL_ELO_MIN) return MAX_LEVEL;
+  if (elo <= 0) return 1;
+  return Math.min(MAX_LEVEL, Math.ceil(elo / LEVEL_BAND_WIDTH));
 }
 
 export function levelRange(level: number): { min: number; max: number } {
-  if (level <= 1) return { min: 0, max: 100 };
-  if (level >= MAX_LEVEL) {
-    return { min: 101 + (MAX_LEVEL - 2) * 200, max: Infinity };
+  const lvl = Math.max(1, Math.min(level, MAX_LEVEL));
+  if (lvl >= MAX_LEVEL) {
+    return { min: (MAX_LEVEL - 1) * LEVEL_BAND_WIDTH + 1, max: Infinity };
   }
   return {
-    min: 101 + (level - 2) * 200,
-    max: 100 + (level - 1) * 200,
+    min: lvl === 1 ? 0 : (lvl - 1) * LEVEL_BAND_WIDTH + 1,
+    max: lvl * LEVEL_BAND_WIDTH,
   };
 }
 
@@ -24,7 +29,7 @@ export function levelLabel(level: number): string {
   return `Level ${level}`;
 }
 
-/** Progress through the current level band (0–1). Level 20 is always 1. */
+/** Progress through the current level band (0–1). Max level is always 1. */
 export function levelProgress(elo: number, level?: number): number {
   const lvl = level ?? eloToLevel(elo);
   if (lvl >= MAX_LEVEL) return 1;
@@ -34,7 +39,7 @@ export function levelProgress(elo: number, level?: number): number {
   return Math.max(0, Math.min(1, (elo - min) / span));
 }
 
-/** Ring color: green (low) → orange (mid) → red (high / L20). */
+/** Ring color: green (low) → orange (mid) → red (high / max level). */
 export function levelRingColor(level: number): string {
   if (level >= MAX_LEVEL) return "#ef4444";
   const t = (level - 1) / (MAX_LEVEL - 1);

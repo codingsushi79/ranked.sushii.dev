@@ -12,10 +12,13 @@ import { TitleBar } from "./components/TitleBar";
 import type { AppView } from "./lib/types";
 import { useAuth } from "./lib/useAuth";
 import { useBridgeStatus } from "./lib/useBridgeStatus";
+import { useUpdateStatus } from "./lib/useUpdateStatus";
+import { UpdateBanner } from "./components/UpdateBanner";
 
 export default function App() {
   const auth = useAuth();
   const { status } = useBridgeStatus();
+  const { appVersion, update, applyUpdate } = useUpdateStatus();
   const [view, setView] = useState<AppView>({ kind: "home" });
 
   async function openSignup() {
@@ -65,6 +68,7 @@ export default function App() {
           onOpenSite={() => void openSite()}
         />
         <main className="app-main">
+          <UpdateBanner appVersion={appVersion} update={update} onApply={applyUpdate} />
           <PlayerSearch onNavigate={setView} />
           <div className="app-main-scroll">
             {view.kind === "home" && (

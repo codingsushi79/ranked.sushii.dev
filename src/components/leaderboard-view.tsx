@@ -29,6 +29,7 @@ import { CsrepTrustBadge } from "@/components/csrep-trust-badge";
 import type { CsrepTrustJson } from "@/lib/csrep-types";
 import { SeasonCountdown } from "@/components/season-countdown";
 import { cn } from "@/lib/utils";
+import { MAX_LEVEL } from "@/lib/elo";
 import { Crosshair } from "lucide-react";
 
 type LeaderboardPlayer = {
@@ -302,7 +303,7 @@ export function LeaderboardView({
                 Overall
               </Button>
               <div className="flex max-h-[min(24rem,50vh)] flex-col gap-0.5 overflow-y-auto">
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((l) => (
+                {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((l) => (
                   <Button
                     key={l}
                     variant={level === l ? "default" : "ghost"}

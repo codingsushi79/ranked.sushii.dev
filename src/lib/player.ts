@@ -7,15 +7,12 @@ import {
   type Season,
 } from "@/db/schema";
 import { getCurrentSeasonInfo } from "./seasons";
-import { eloToLevel, levelRange, STARTING_ELO } from "./elo";
+import { eloToLevel, levelRange, MAX_LEVEL, STARTING_ELO } from "./elo";
 
 const PLACED = sql`${playerSeasons.placementGames} >= 5`;
 
 function levelEloBounds(level: number) {
-  if (level === 20) {
-    return { min: 101 + 18 * 200, max: 999999 };
-  }
-  const { min, max } = levelRange(level);
+  const { min, max } = levelRange(Math.max(1, Math.min(level, MAX_LEVEL)));
   return { min, max: max === Infinity ? 999999 : max };
 }
 

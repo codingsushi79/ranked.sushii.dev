@@ -15,6 +15,7 @@ const state = {
   inRatedMatch: false,
   matchMode: null,
   gsiInstalled: false,
+  updateRequired: false,
   gameIntegration: null,
 };
 
@@ -62,6 +63,7 @@ function setCs2Status(patch) {
   if (patch.inRatedMatch != null) state.inRatedMatch = !!patch.inRatedMatch;
   if ("matchMode" in patch) state.matchMode = patch.matchMode ?? null;
   if (patch.gsiInstalled != null) state.gsiInstalled = !!patch.gsiInstalled;
+  if (patch.updateRequired != null) state.updateRequired = !!patch.updateRequired;
 }
 
 function setGameIntegration(integration) {
@@ -88,6 +90,7 @@ function getStatus() {
     inRatedMatch: state.inRatedMatch,
     matchMode: state.matchMode,
     gsiInstalled: state.gsiInstalled,
+    updateRequired: state.updateRequired,
   };
 }
 

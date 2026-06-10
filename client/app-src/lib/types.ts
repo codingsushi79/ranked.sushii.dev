@@ -135,6 +135,7 @@ export type BridgeStatus = {
   activeMatch?: { map: string; mode: string; playerCount: number; externalId?: string };
   lastReport?: { ok: boolean; at: string; message?: string; externalId?: string };
   lastError?: string;
+  updateRequired?: boolean;
   jsiInstall?: {
     ready?: boolean;
     inCatalog?: boolean;

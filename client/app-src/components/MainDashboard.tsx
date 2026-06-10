@@ -47,6 +47,12 @@ export function MainDashboard({
         onCloseAll={onCloseAllOverlays}
       />
 
+      {updateStatus.status === "available" && (
+        <div className="toast toast-info">
+          Update v{updateStatus.version} available — match recording paused until you update.
+        </div>
+      )}
+
       {updateStatus.status === "downloading" && (
         <div className="toast toast-info">
           Downloading update v{updateStatus.version}… {updateStatus.progress ?? 0}%
@@ -55,7 +61,7 @@ export function MainDashboard({
 
       {updateStatus.status === "ready" && (
         <div className="toast toast-info">
-          Update v{updateStatus.version} ready — restarting in a few seconds…
+          Update v{updateStatus.version} ready — restart to finish updating.
         </div>
       )}
 

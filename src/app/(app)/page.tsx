@@ -65,7 +65,7 @@ export default async function HomePage() {
       <div className="mt-20 grid gap-6 md:grid-cols-3">
         {[
           { icon: Crosshair, title: "Play ranked", desc: "Competitive matches tracked automatically through the CS2 JSI client. Win or lose Elo based on team strength and your performance." },
-          { icon: Trophy, title: "Level leaderboards", desc: "Twenty skill levels from 0 to 3900+ Elo. Compete on the board for your level — not just the global top 10." },
+          { icon: Trophy, title: "Level leaderboards", desc: "Five skill levels from 0 to 3700+ Elo. Compete on the board for your level — not just the global top 10." },
           { icon: BarChart3, title: "Full match stats", desc: "K/D, ADR, headshots, MVPs, and Elo changes for every rated game — with scoreboards and demo links." },
         ].map((item, i) => (
         <Card

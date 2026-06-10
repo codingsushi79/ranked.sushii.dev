@@ -8,14 +8,14 @@ import { getCsrepTrustBatch } from "@/lib/csrep";
 import { csrepTrustToJson } from "@/lib/csrep-types";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
+import { eloToLevel, MAX_LEVEL, PLACEMENT_GAMES } from "@/lib/elo";
 import { jsonOk } from "@/lib/api";
 
 function parseLevel(param: string | null): number | null {
   if (!param || param === "all" || param === "overall") return null;
   const n = Number(param);
   if (!Number.isFinite(n)) return null;
-  return Math.max(1, Math.min(20, n));
+  return Math.max(1, Math.min(MAX_LEVEL, n));
 }
 
 export async function GET(req: NextRequest) {

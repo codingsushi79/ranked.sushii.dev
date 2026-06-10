@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import http from "http";
 import { shell } from "electron";
+import { renderCallbackPage } from "./callback-page";
 
 export const DESKTOP_AUTH_PORT = 27501;
 
@@ -33,7 +34,11 @@ export function startDesktopLogin(apiUrl: string): Promise<string> {
         if (gotState !== state || !clientId) {
           res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
           res.end(
-            "<h1>Sign-in failed</h1><p>Return to Ranked CS2 and try again.</p>"
+            renderCallbackPage({
+              title: "Sign-in failed",
+              message: "Return to Ranked CS2 and try signing in again.",
+              variant: "error",
+            })
           );
           finish(() => reject(new Error("Sign-in failed — try again")));
           return;
@@ -41,7 +46,11 @@ export function startDesktopLogin(apiUrl: string): Promise<string> {
 
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
         res.end(
-          "<h1>Signed in!</h1><p>You can close this tab and return to Ranked CS2.</p>"
+          renderCallbackPage({
+            title: "Account linked",
+            message: "Your account is linked. Return to Ranked CS2 to continue.",
+            autoCloseSeconds: 5,
+          })
         );
         finish(() => resolve(clientId));
       } catch (err) {

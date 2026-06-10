@@ -1312,6 +1312,57 @@ input {
   padding: 16px;
 }
 
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 183, 71, 0.24);
+  background:
+    linear-gradient(135deg, rgba(255, 183, 71, 0.12), rgba(124, 92, 255, 0.08)),
+    rgba(18, 22, 32, 0.92);
+}
+
+.update-banner-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-banner-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.update-banner-meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.update-banner-action {
+  flex-shrink: 0;
+}
+
+.update-progress {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.update-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+  transition: width 0.2s ease;
+}
+
 .home-stat-card {
   display: flex;
   align-items: center;

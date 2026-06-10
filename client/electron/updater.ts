@@ -10,11 +10,13 @@ import type { UpdateStatusPayload } from "../shared/types";
 import { broadcast } from "./windows";
 
 const DEFAULT_UPDATE_URL = "https://ranked.sushii.dev/downloads";
-const AUTO_INSTALL_DELAY_MS = 3_000;
 
 let eventsAttached = false;
 let updaterConfigured = false;
 let manifestDownloadPromise: Promise<void> | null = null;
+let currentUpdateStatus: UpdateStatusPayload = { status: "idle" };
+let pendingManifest: { filename: string; version: string } | null = null;
+let pendingPortablePath: string | null = null;
 
 function readUpdateUrl() {
   const bakedPath = path.join(__dirname, "update-config.baked.json");
@@ -50,14 +52,21 @@ function compareVersions(left: string, right: string) {
 }
 
 function sendUpdate(payload: UpdateStatusPayload) {
+  currentUpdateStatus = payload;
   broadcast("app:update", payload);
 }
 
-function scheduleAutoInstall(version: string) {
-  sendUpdate({ status: "ready", version });
-  setTimeout(() => {
-    autoUpdater.quitAndInstall(false, true);
-  }, AUTO_INSTALL_DELAY_MS);
+export function getUpdateStatus(): UpdateStatusPayload {
+  return currentUpdateStatus;
+}
+
+export function isMatchRecordingBlocked(): boolean {
+  if (!app.isPackaged) return false;
+  return (
+    currentUpdateStatus.status === "available" ||
+    currentUpdateStatus.status === "downloading" ||
+    currentUpdateStatus.status === "ready"
+  );
 }
 
 function attachUpdaterEvents() {
@@ -93,7 +102,7 @@ function attachUpdaterEvents() {
   });
 
   autoUpdater.on("update-downloaded", (info) => {
-    scheduleAutoInstall(info.version);
+    sendUpdate({ status: "ready", version: info.version });
   });
 
   autoUpdater.on("error", (error) => {
@@ -111,8 +120,8 @@ function ensureUpdaterConfigured() {
 
   updaterConfigured = true;
   attachUpdaterEvents();
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.setFeedURL({
     provider: "generic",
     url: readUpdateUrl(),
@@ -165,7 +174,8 @@ async function downloadPortableFromManifest(filename: string, version: string) {
     });
 
     await pipeline(reader, createWriteStream(destination));
-    schedulePortableInstall(destination, version);
+    pendingPortablePath = destination;
+    sendUpdate({ status: "ready", version });
   })().finally(() => {
     manifestDownloadPromise = null;
   });
@@ -173,12 +183,44 @@ async function downloadPortableFromManifest(filename: string, version: string) {
   return manifestDownloadPromise;
 }
 
-function schedulePortableInstall(installerPath: string, version: string) {
-  sendUpdate({ status: "ready", version });
-  setTimeout(() => {
-    spawn(installerPath, [], { detached: true, stdio: "ignore" }).unref();
+async function startDownload(): Promise<void> {
+  if (currentUpdateStatus.status === "downloading") {
+    return;
+  }
+
+  if (pendingManifest) {
+    await downloadPortableFromManifest(
+      pendingManifest.filename,
+      pendingManifest.version
+    );
+    return;
+  }
+
+  if (!updaterConfigured) {
+    throw new Error("Update download is unavailable.");
+  }
+
+  sendUpdate({
+    status: "downloading",
+    version: currentUpdateStatus.version,
+    progress: 0,
+  });
+  await autoUpdater.downloadUpdate();
+}
+
+function installReadyUpdate() {
+  if (pendingPortablePath) {
+    spawn(pendingPortablePath, [], { detached: true, stdio: "ignore" }).unref();
     app.quit();
-  }, AUTO_INSTALL_DELAY_MS);
+    return;
+  }
+
+  if (updaterConfigured) {
+    autoUpdater.quitAndInstall(false, true);
+    return;
+  }
+
+  throw new Error("No downloaded update is ready to install.");
 }
 
 async function checkViaManifest(): Promise<UpdateStatusPayload> {
@@ -187,7 +229,10 @@ async function checkViaManifest(): Promise<UpdateStatusPayload> {
   try {
     const manifest = await fetchManifest();
     if (compareVersions(manifest.version, currentVersion) > 0) {
-      void downloadPortableFromManifest(manifest.filename, manifest.version);
+      pendingManifest = {
+        filename: manifest.filename,
+        version: manifest.version,
+      };
       const payload: UpdateStatusPayload = {
         status: "available",
         version: manifest.version,
@@ -195,6 +240,9 @@ async function checkViaManifest(): Promise<UpdateStatusPayload> {
       sendUpdate(payload);
       return payload;
     }
+
+    pendingManifest = null;
+    pendingPortablePath = null;
 
     const payload: UpdateStatusPayload = {
       status: "idle",
@@ -234,6 +282,8 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
     const latestVersion = result?.updateInfo?.version;
 
     if (latestVersion && compareVersions(latestVersion, currentVersion) > 0) {
+      pendingManifest = null;
+      pendingPortablePath = null;
       const payload: UpdateStatusPayload = {
         status: "available",
         version: latestVersion,
@@ -242,6 +292,8 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
       return payload;
     }
 
+    pendingManifest = null;
+    pendingPortablePath = null;
     const payload: UpdateStatusPayload = {
       status: "idle",
       version: currentVersion,
@@ -256,20 +308,24 @@ async function performUpdateCheck(): Promise<UpdateStatusPayload> {
 export function initAutoUpdater() {
   ipcMain.handle("update:check", () => performUpdateCheck());
 
-  ipcMain.handle("update:install", () => {
-    if (updaterConfigured) {
-      autoUpdater.quitAndInstall(false, true);
-      return;
-    }
+  ipcMain.handle("update:install", async () => {
+    try {
+      if (currentUpdateStatus.status === "ready") {
+        installReadyUpdate();
+        return;
+      }
 
-    void fetchManifest()
-      .then((manifest) => downloadPortableFromManifest(manifest.filename, manifest.version))
-      .catch((error) => {
-        sendUpdate({
-          status: "error",
-          message: error instanceof Error ? error.message : "Could not install update.",
-        });
+      if (currentUpdateStatus.status === "available") {
+        await startDownload();
+        return;
+      }
+    } catch (error) {
+      sendUpdate({
+        status: "error",
+        message: error instanceof Error ? error.message : "Could not install update.",
+        version: currentUpdateStatus.version,
       });
+    }
   });
 
   if (!app.isPackaged) {

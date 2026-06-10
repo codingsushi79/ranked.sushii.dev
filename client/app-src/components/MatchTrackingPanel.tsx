@@ -22,11 +22,14 @@ function integrationReady(status: BridgeStatus | null) {
 }
 
 export function MatchTrackingPanel({ status }: { status: BridgeStatus | null }) {
-  const tracking = status?.tracking && status.activeMatch;
-  const inUnsupportedGame = !!status?.inMatch && !status?.inRatedMatch && !tracking;
+  const updateRequired = !!status?.updateRequired;
+  const tracking = status?.tracking && status.activeMatch && !updateRequired;
+  const inUnsupportedGame =
+    !!status?.inMatch && !status?.inRatedMatch && !tracking && !updateRequired;
   const ready = integrationReady(status);
 
   function trackingLabel() {
+    if (updateRequired) return "Update required";
     if (tracking) return "Tracking match";
     if (!ready) return "Waiting for CS2 — launch the game";
     if (!status?.cs2Connected) return "Waiting for CS2 — launch the game";
@@ -38,8 +41,9 @@ export function MatchTrackingPanel({ status }: { status: BridgeStatus | null }) 
     return "Ready";
   }
 
-  const pillClass =
-    tracking || status?.inRatedMatch
+  const pillClass = updateRequired
+    ? "ranked-pill ranked-pill-warn"
+    : tracking || status?.inRatedMatch
       ? "ranked-pill ranked-pill-live"
       : inUnsupportedGame
         ? "ranked-pill ranked-pill-warn"
@@ -57,11 +61,13 @@ export function MatchTrackingPanel({ status }: { status: BridgeStatus | null }) 
         <span>{trackingLabel()}</span>
       </div>
       <p className="ranked-meta">
-        {ready
-          ? status?.cs2Connected
-            ? "CS2 connected · matches report automatically after rated games"
-            : "Integration installed · open Counter-Strike 2 to start tracking"
-          : "Install Counter-Strike 2 from Steam if you have not already, then launch the game once"}
+        {updateRequired
+          ? "Install the latest app update before rated matches can be recorded."
+          : ready
+            ? status?.cs2Connected
+              ? "CS2 connected · matches report automatically after rated games"
+              : "Integration installed · open Counter-Strike 2 to start tracking"
+            : "Install Counter-Strike 2 from Steam if you have not already, then launch the game once"}
       </p>
       {inUnsupportedGame && (
         <p className="ranked-meta ranked-meta-warn">
