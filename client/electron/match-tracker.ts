@@ -4,6 +4,7 @@ import path from "path";
 import { GsiServer, type RawGsiPayload } from "./gsi-server";
 import { GSI_CONFIG_FILENAME, writeGsiConfig } from "./gsi-config";
 import { buildMatchReportFromGsi } from "./gsi-match-report";
+import { extractDemoFromGsi } from "./gsi-demo";
 import { isAllowedMatchMode, normalizeMatchMode } from "./match-modes";
 import { isMatchRecordingBlocked } from "./updater";
 
@@ -17,6 +18,8 @@ type MatchSession = {
   mode: string;
   reported: boolean;
   lastLivePayload: RawGsiPayload | null;
+  demoShareCode: string | null;
+  demoUrl: string | null;
 };
 
 async function bridgePost(endpoint: string, body?: Record<string, unknown>): Promise<boolean> {
@@ -204,6 +207,9 @@ export class MatchTracker {
       }
       if (this.matchSession) {
         this.matchSession.lastLivePayload = this.gsi?.getLastPayload() ?? payload;
+        const demo = extractDemoFromGsi(payload);
+        if (demo.demoShareCode) this.matchSession.demoShareCode = demo.demoShareCode;
+        if (demo.demoUrl) this.matchSession.demoUrl = demo.demoUrl;
       }
     } else if (mapPhase === "warmup" || mapPhase === "intermission") {
       this.pendingMatchMode = payload.map?.mode ?? this.pendingMatchMode;
@@ -312,6 +318,8 @@ export class MatchTracker {
       mode,
       reported: false,
       lastLivePayload: null,
+      demoShareCode: null,
+      demoUrl: null,
     };
     await bridgePost("/match/start", {
       externalId: this.matchSession.externalId,
@@ -346,6 +354,8 @@ export class MatchTracker {
       map: this.matchSession.map,
       mode: this.matchSession.mode,
       lastLivePayload: this.matchSession.lastLivePayload,
+      demoShareCode: this.matchSession.demoShareCode,
+      demoUrl: this.matchSession.demoUrl,
     });
 
     if ("error" in result) {

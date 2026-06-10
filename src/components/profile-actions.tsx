@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export function ProfileActions({
   canPlay,
@@ -15,18 +14,16 @@ export function ProfileActions({
   }
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
-        {!hasSteam ? (
-          <Button asChild>
-            <Link href="/api/steam/link">Link Steam</Link>
-          </Button>
-        ) : (
-          <Button variant="outline" asChild>
-            <Link href="/api/steam/link">Re-link Steam</Link>
-          </Button>
-        )}
-      </div>
+    <div className="flex shrink-0 flex-wrap gap-2 sm:pt-1">
+      {!hasSteam ? (
+        <Button asChild>
+          <a href="/api/steam/link">Link Steam</a>
+        </Button>
+      ) : (
+        <Button variant="outline" asChild>
+          <a href="/api/steam/link">Re-link Steam</a>
+        </Button>
+      )}
     </div>
   );
 }

@@ -74,21 +74,31 @@ export function parseCsrepApiPayload(
   steamId: string,
   payload: unknown
 ): Omit<CsrepTrust, "fetchedAt" | "configured"> {
-  const data =
+  const root =
     payload && typeof payload === "object"
-      ? "data" in payload &&
-        payload.data &&
-        typeof payload.data === "object"
-        ? (payload.data as Record<string, unknown>)
-        : (payload as Record<string, unknown>)
+      ? (payload as Record<string, unknown>)
       : {};
+
+  const data =
+    root.result && typeof root.result === "object"
+      ? (root.result as Record<string, unknown>)
+      : root.data && typeof root.data === "object"
+        ? (root.data as Record<string, unknown>)
+        : root;
 
   const player =
     data.player && typeof data.player === "object"
       ? (data.player as Record<string, unknown>)
       : data;
 
+  const bans =
+    player.bans && typeof player.bans === "object"
+      ? (player.bans as Record<string, unknown>)
+      : undefined;
+
   const score = pickNumber(
+    player.trust_rating,
+    player.trustRating,
     player.score,
     player.csrepScore,
     player.csrep_score,
@@ -104,6 +114,7 @@ export function parseCsrepApiPayload(
     player.autoFlagged,
     player.isAutoflagged,
     player.aiFlagged,
+    player.ai_flagged,
     player.flagged
   );
 
@@ -111,7 +122,8 @@ export function parseCsrepApiPayload(
     player.overwatchConvicted,
     player.overwatch_convicted,
     player.isOverwatchConvicted,
-    player.convicted
+    player.convicted,
+    bans?.overwatch
   );
 
   const reportsCount =
@@ -128,7 +140,11 @@ export function parseCsrepApiPayload(
     (apiLabel as CsrepTrustLabel | null) ??
     (score != null
       ? scoreToTrustLabel(score, { autoflagged, overwatchConvicted })
-      : "Unknown");
+      : overwatchConvicted
+        ? "Overwatch Convicted"
+        : autoflagged
+          ? "Autoflagged"
+          : "Unknown");
 
   return {
     steamId,

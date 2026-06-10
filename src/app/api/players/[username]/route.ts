@@ -1,11 +1,9 @@
-import { eq, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users, playerSeasons, matchPlayers, matches } from "@/db/schema";
-import { ensureCurrentSeason, getOrCreatePlayerSeason, kdRatio } from "@/lib/player";
-import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
-import { getCsrepTrust } from "@/lib/csrep";
+import { users } from "@/db/schema";
+import { getPlayerProfileData } from "@/lib/player-profile";
 import { csrepTrustToJson } from "@/lib/csrep-types";
-import { getPlayerLive, playerLiveToJson } from "@/lib/player-live";
+import { playerLiveToJson } from "@/lib/player-live";
 import { jsonError, jsonOk } from "@/lib/api";
 
 export async function GET(
@@ -19,57 +17,32 @@ export async function GET(
   });
   if (!user) return jsonError("Player not found", 404);
 
-  const season = await ensureCurrentSeason();
-  const ps = await getOrCreatePlayerSeason(user.id, season.id);
-
-  const recentMatches = await db
-    .select({
-      map: matches.map,
-      mode: matches.mode,
-      kills: matchPlayers.kills,
-      deaths: matchPlayers.deaths,
-      assists: matchPlayers.assists,
-      eloChange: matchPlayers.eloChange,
-      won: matchPlayers.won,
-      playedAt: matches.createdAt,
-    })
-    .from(matchPlayers)
-    .innerJoin(matches, eq(matchPlayers.matchId, matches.id))
-    .where(eq(matchPlayers.userId, user.id))
-    .orderBy(desc(matches.createdAt))
-    .limit(10);
-
-  const csrep = user.steamId ? csrepTrustToJson(await getCsrepTrust(user.steamId)) : null;
-  const live = playerLiveToJson(await getPlayerLive(user.id));
+  const profile = await getPlayerProfileData(user.id);
+  if (!profile) return jsonError("Player not found", 404);
 
   return jsonOk({
-    username: user.username,
-    steamName: user.steamName,
-    steamAvatar: user.steamAvatar,
-    steamId: user.steamId,
-    season: season.number,
-    stats: {
-      elo: ps.elo,
-      level: eloToLevel(ps.elo),
-      isPlacing: ps.placementGames < PLACEMENT_GAMES,
-      placementsRemaining: Math.max(0, PLACEMENT_GAMES - ps.placementGames),
-      wins: ps.wins,
-      losses: ps.losses,
-      kills: ps.kills,
-      deaths: ps.deaths,
-      assists: ps.assists,
-      headshots: ps.headshots,
-      mvps: ps.mvps,
-      damage: ps.damage,
-      matchesPlayed: ps.matchesPlayed,
-      kd: kdRatio(ps.kills, ps.deaths),
-      winRate:
-        ps.wins + ps.losses > 0
-          ? Math.round((ps.wins / (ps.wins + ps.losses)) * 100)
-          : 0,
-    },
-    csrep,
-    live,
-    recentMatches,
+    username: profile.username,
+    steamName: profile.steamName,
+    steamAvatar: profile.steamAvatar,
+    steamId: profile.steamId,
+    season: profile.season.number,
+    stats: profile.stats,
+    csrep: csrepTrustToJson(profile.csrep),
+    live: playerLiveToJson(profile.live),
+    recentMatches: profile.recentMatches.map((m) => ({
+      matchId: m.matchId,
+      map: m.map,
+      mode: m.mode,
+      kills: m.kills,
+      deaths: m.deaths,
+      assists: m.assists,
+      eloChange: m.eloChange,
+      won: m.won,
+      team0Score: m.team0Score,
+      team1Score: m.team1Score,
+      demoShareCode: m.demoShareCode,
+      demoUrl: m.demoUrl,
+      playedAt: m.playedAt.toISOString(),
+    })),
   });
 }

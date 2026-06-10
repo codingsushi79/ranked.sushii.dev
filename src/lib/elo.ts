@@ -108,6 +108,8 @@ export function calculateEloChange(params: {
   const actual = params.won ? 1 : 0;
   const perf = performanceModifier(params.stats);
   const adjustedActual = Math.max(0, Math.min(1, actual + perf));
-  const change = Math.round(k * (adjustedActual - expected));
-  return Math.max(-50, Math.min(50, change));
+  let change = Math.round(k * (adjustedActual - expected));
+  change = Math.max(-50, Math.min(50, change));
+  if (params.won) change = Math.max(0, change);
+  return change;
 }

@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { csrepProfiles } from "@/db/schema";
 import {
@@ -9,17 +9,18 @@ import {
 } from "@/lib/csrep-types";
 
 const CACHE_MS = 60 * 60 * 1000;
-const ERROR_CACHE_MS = 15 * 60 * 1000;
+const MISS_CACHE_MS = 15 * 60 * 1000;
 
 function isConfigured(): boolean {
-  return !!process.env.CSREP_API_KEY;
+  return !!process.env.CSREP_API_KEY?.trim();
 }
 
 function apiBaseUrl(): string {
-  return (
+  const raw =
     process.env.CSREP_API_BASE_URL?.replace(/\/$/, "") ??
-    "https://csrep.gg/api/v1"
-  );
+    "https://csrep.gg/api";
+  // Older docs used /api/v1 — CSRep serves player data at /api/player/:id.
+  return raw.replace(/\/v1$/, "");
 }
 
 function rowToTrust(row: typeof csrepProfiles.$inferSelect): CsrepTrust {
@@ -51,7 +52,7 @@ function fallbackTrust(steamId: string): CsrepTrust {
 }
 
 async function fetchFromApi(steamId: string) {
-  const apiKey = process.env.CSREP_API_KEY;
+  const apiKey = process.env.CSREP_API_KEY?.trim();
   if (!apiKey) return null;
 
   const url = `${apiBaseUrl()}/player/${steamId}`;
@@ -61,15 +62,21 @@ async function fetchFromApi(steamId: string) {
       Authorization: `Bearer ${apiKey}`,
       "X-API-Key": apiKey,
     },
-    next: { revalidate: 0 },
+    cache: "no-store",
   });
 
-  if (!res.ok) {
-    console.warn(`CSRep API ${res.status} for ${steamId}`);
+  const json = (await res.json().catch(() => null)) as
+    | Record<string, unknown>
+    | null;
+
+  if (!res.ok || !json || json.status === "ERROR") {
+    console.warn(
+      `CSRep API ${res.status} for ${steamId}:`,
+      typeof json?.message === "string" ? json.message : url
+    );
     return null;
   }
 
-  const json = await res.json();
   return parseCsrepApiPayload(steamId, json);
 }
 
@@ -103,6 +110,14 @@ async function upsertCache(
     });
 }
 
+export async function clearCsrepCache(steamId?: string) {
+  if (steamId) {
+    await db.delete(csrepProfiles).where(eq(csrepProfiles.steamId, steamId));
+    return;
+  }
+  await db.delete(csrepProfiles);
+}
+
 export async function getCsrepTrust(
   steamId: string | null | undefined,
   options: { forceRefresh?: boolean } = {}
@@ -117,7 +132,7 @@ export async function getCsrepTrust(
   const cacheFresh =
     cached &&
     now - cached.fetchedAt.getTime() <
-      (cached.score != null ? CACHE_MS : ERROR_CACHE_MS);
+      (cached.score != null ? CACHE_MS : MISS_CACHE_MS);
 
   if (cached && cacheFresh && !options.forceRefresh) {
     return rowToTrust(cached);
@@ -170,11 +185,11 @@ export async function getCsrepTrustBatch(
     const row = map.get(id);
     if (!row) return true;
     const age = Date.now() - row.fetchedAt.getTime();
-    return age >= (row.score != null ? CACHE_MS : ERROR_CACHE_MS);
+    return age >= (row.score != null ? CACHE_MS : MISS_CACHE_MS);
   });
 
   await Promise.all(
-    stale.slice(0, 10).map(async (steamId) => {
+    stale.slice(0, 25).map(async (steamId) => {
       const trust = await getCsrepTrust(steamId);
       if (trust) map.set(steamId, trust);
     })
@@ -187,4 +202,11 @@ export async function getCsrepTrustBatch(
   }
 
   return map;
+}
+
+export async function countCsrepCache() {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(csrepProfiles);
+  return row?.count ?? 0;
 }

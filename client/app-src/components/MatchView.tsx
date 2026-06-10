@@ -38,30 +38,48 @@ export function MatchView({
             <tr>
               <th>Player</th>
               <th>K/D/A</th>
+              <th>ADR</th>
               <th>Elo</th>
             </tr>
           </thead>
           <tbody>
             {team.map((p, i) => (
-              <tr key={`${p.username ?? p.displayName}-${i}`}>
+              <tr
+                key={`${p.username ?? p.displayName}-${i}`}
+                className={p.isRanked ? "is-ranked" : "is-unranked"}
+              >
                 <td>
-                  {p.username ? (
-                    <button
-                      type="button"
-                      className="table-link"
-                      onClick={() => onNavigate({ kind: "player", username: p.username! })}
-                    >
-                      {p.displayName ?? p.username}
-                    </button>
-                  ) : (
-                    p.displayName ?? "Player"
-                  )}
+                  <div className="match-player-cell">
+                    {p.username ? (
+                      <button
+                        type="button"
+                        className="table-link"
+                        onClick={() => onNavigate({ kind: "player", username: p.username! })}
+                      >
+                        {p.displayName ?? p.username}
+                      </button>
+                    ) : (
+                      <span>{p.displayName ?? "Player"}</span>
+                    )}
+                    {p.isRanked && <span className="match-ranked-badge">Ranked</span>}
+                  </div>
                 </td>
                 <td>
                   {p.kills}/{p.deaths}/{p.assists}
                 </td>
-                <td className={(p.eloChange ?? 0) >= 0 ? "text-win" : "text-loss"}>
-                  {p.eloChange != null ? `${p.eloChange >= 0 ? "+" : ""}${p.eloChange}` : "—"}
+                <td>{(p.adr ?? 0).toFixed(0)}</td>
+                <td
+                  className={
+                    p.isRanked && p.eloChange != null
+                      ? p.eloChange >= 0
+                        ? "text-win"
+                        : "text-loss"
+                      : undefined
+                  }
+                >
+                  {p.isRanked && p.eloChange != null
+                    ? `${p.eloChange >= 0 ? "+" : ""}${p.eloChange}`
+                    : "—"}
                 </td>
               </tr>
             ))}
@@ -82,6 +100,37 @@ export function MatchView({
               <> · {match.team0Score} – {match.team1Score}</>
             )}
           </p>
+          {(match.demo || match.demoUrl) && (
+            <div className="match-demo-actions">
+              {match.demo && (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => void window.ranked.openExternal(match.demo!.steamUrl)}
+                  >
+                    Watch demo in CS2
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => void window.ranked.openExternal(match.demo!.webUrl)}
+                  >
+                    Open in browser
+                  </button>
+                </>
+              )}
+              {match.demoUrl && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => void window.ranked.openExternal(match.demoUrl!)}
+                >
+                  Demo link
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

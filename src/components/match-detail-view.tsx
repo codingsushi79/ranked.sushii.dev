@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -16,10 +17,8 @@ type PlayerRow = MatchDetail["team0"][number];
 
 function ScoreboardTable({
   players,
-  isWinner,
 }: {
   players: PlayerRow[];
-  isWinner: boolean;
 }) {
   return (
     <Table>
@@ -39,10 +38,17 @@ function ScoreboardTable({
       </TableHeader>
       <TableBody>
         {players.map((p, i) => (
-          <TableRow key={`${p.username ?? p.displayName}-${i}`}>
+          <TableRow
+            key={`${p.username ?? p.displayName}-${i}`}
+            className={cn(
+              p.isRanked
+                ? "border-l-2 border-l-primary bg-primary/5"
+                : "text-muted-foreground"
+            )}
+          >
             <TableCell>
               <div className="flex items-center gap-2">
-                <Avatar className="size-6">
+                <Avatar className={cn("size-6", !p.isRanked && "opacity-70")}>
                   {p.steamAvatar && (
                     <AvatarImage src={p.steamAvatar} alt={p.displayName} />
                   )}
@@ -51,22 +57,34 @@ function ScoreboardTable({
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  {p.username ? (
-                    <Link
-                      href={`/players/${p.username}`}
-                      className="flex items-center gap-1.5 truncate font-medium hover:underline"
-                    >
-                      {p.displayName}
-                      {p.isAdmin && <AdminBadge />}
-                    </Link>
-                  ) : (
-                    <span className="truncate font-medium">{p.displayName}</span>
-                  )}
-                  {!p.isRanked && (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      (unranked)
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {p.username ? (
+                      <Link
+                        href={`/players/${p.username}`}
+                        className={cn(
+                          "flex items-center gap-1.5 truncate font-medium hover:underline",
+                          p.isRanked && "text-foreground"
+                        )}
+                      >
+                        {p.displayName}
+                        {p.isAdmin && <AdminBadge />}
+                      </Link>
+                    ) : (
+                      <span
+                        className={cn(
+                          "truncate font-medium",
+                          p.isRanked && "text-foreground"
+                        )}
+                      >
+                        {p.displayName}
+                      </span>
+                    )}
+                    {p.isRanked && (
+                      <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                        Ranked
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </TableCell>
@@ -89,11 +107,12 @@ function ScoreboardTable({
             <TableCell
               className={cn(
                 "text-right tabular-nums",
-                p.eloChange != null &&
-                  (p.eloChange >= 0 ? "text-emerald-600" : "text-red-500")
+                p.isRanked &&
+                  p.eloChange != null &&
+                  (p.eloChange >= 0 ? "font-medium text-emerald-600" : "font-medium text-red-500")
               )}
             >
-              {p.eloChange != null ? (
+              {p.isRanked && p.eloChange != null ? (
                 <>
                   {p.eloChange >= 0 ? "+" : ""}
                   {p.eloChange}
@@ -133,7 +152,7 @@ export function MatchDetailView({ match }: { match: MatchDetail }) {
         </p>
       </div>
 
-      {(match.demo || match.demoUrl) && (
+      {(match.demo || match.demoUrl) ? (
         <div className="flex flex-wrap gap-2 animate-in fade-in duration-500 fill-mode-both delay-100">
           {match.demo && (
             <>
@@ -169,6 +188,10 @@ export function MatchDetailView({ match }: { match: MatchDetail }) {
             </code>
           )}
         </div>
+      ) : (
+        <p className="text-sm text-muted-foreground animate-in fade-in duration-500 fill-mode-both delay-100">
+          Demo link unavailable for this match.
+        </p>
       )}
 
       <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both delay-150">
@@ -183,7 +206,7 @@ export function MatchDetailView({ match }: { match: MatchDetail }) {
             <span className="ml-2 tabular-nums">{match.team0Score}</span>
           )}
         </h2>
-        <ScoreboardTable players={match.team0} isWinner={team0Won} />
+        <ScoreboardTable players={match.team0} />
       </div>
 
       <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both delay-200">
@@ -198,7 +221,7 @@ export function MatchDetailView({ match }: { match: MatchDetail }) {
             <span className="ml-2 tabular-nums">{match.team1Score}</span>
           )}
         </h2>
-        <ScoreboardTable players={match.team1} isWinner={team1Won} />
+        <ScoreboardTable players={match.team1} />
       </div>
     </div>
   );

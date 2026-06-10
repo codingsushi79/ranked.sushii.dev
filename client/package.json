@@ -1,6 +1,6 @@
 {
   "name": "ranked-cs2-client",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Ranked CS2 desktop client — match tracking and JSI bridge",
   "main": "dist-electron/electron/main.js",
   "author": "sushii.dev",
@@ -52,14 +52,22 @@
       "shared/**/*"
     ],
     "extraResources": [
-      { "from": "bridge", "to": "bridge" },
-      { "from": "cs2", "to": "cs2" }
+      {
+        "from": "bridge",
+        "to": "bridge"
+      },
+      {
+        "from": "cs2",
+        "to": "cs2"
+      }
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "ranked-cs2-client-setup.${ext}",
@@ -72,7 +80,9 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "include": "build/installer.nsh",
-      "installerLanguages": ["en_US"],
+      "installerLanguages": [
+        "en_US"
+      ],
       "shortcutName": "Ranked CS2"
     }
   }

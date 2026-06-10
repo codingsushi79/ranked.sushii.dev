@@ -54,6 +54,7 @@ export type ClientProfile = {
   };
   recentMatches: RecentMatch[];
   csrep: CsrepTrustJson | null;
+  live?: PlayerLiveSnapshot | null;
 };
 
 export type RecentMatch = {
@@ -67,6 +68,8 @@ export type RecentMatch = {
   won: boolean;
   team0Score?: number | null;
   team1Score?: number | null;
+  demoShareCode?: string | null;
+  demoUrl?: string | null;
   playedAt: string;
 };
 
@@ -91,6 +94,7 @@ export type PublicPlayer = {
   username: string;
   steamName: string | null;
   steamAvatar: string | null;
+  steamId: string | null;
   season: number;
   stats: ClientProfile["stats"];
   csrep?: CsrepTrustJson | null;
@@ -120,6 +124,12 @@ export type MatchDetail = {
   team1Score: number | null;
   playedAt: string;
   season: number | null;
+  demo?: {
+    shareCode: string;
+    steamUrl: string;
+    webUrl: string;
+  } | null;
+  demoUrl?: string | null;
   team0: MatchPlayerRow[];
   team1: MatchPlayerRow[];
 };
@@ -132,6 +142,10 @@ export type MatchPlayerRow = {
   kills: number;
   deaths: number;
   assists: number;
+  headshots?: number;
+  mvps?: number;
+  damage?: number;
+  adr?: number;
   kd?: number;
   eloChange?: number | null;
   isRanked?: boolean;

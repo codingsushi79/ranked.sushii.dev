@@ -10,6 +10,91 @@ import {
 import { buildDemoLinks } from "@/lib/demo";
 import { kdRatio } from "@/lib/player";
 
+type RankedRow = {
+  userId: string;
+  username: string;
+  steamName: string | null;
+  steamAvatar: string | null;
+  steamId: string | null;
+  isAdmin: boolean;
+  team: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  headshots: number;
+  mvps: number;
+  damage: number;
+  adr: number;
+  eloBefore: number;
+  eloAfter: number;
+  eloChange: number;
+  won: boolean;
+};
+
+function matchesRankedEntry(
+  entry: ScoreboardEntry,
+  ranked: RankedRow
+): boolean {
+  if (entry.username && ranked.username === entry.username) return true;
+  if (entry.steamId && ranked.steamId === entry.steamId) return true;
+  if (
+    entry.displayName &&
+    ranked.steamName &&
+    entry.displayName === ranked.steamName
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function enrichScoreboardEntry(entry: ScoreboardEntry, rankedRows: RankedRow[]) {
+  const ranked = rankedRows.find((r) => matchesRankedEntry(entry, r));
+  return {
+    ...entry,
+    displayName:
+      entry.displayName ?? ranked?.steamName ?? entry.username ?? "Player",
+    username: entry.username ?? ranked?.username,
+    steamAvatar: ranked?.steamAvatar ?? null,
+    isAdmin: ranked?.isAdmin ?? false,
+    kd: kdRatio(entry.kills, entry.deaths),
+    eloChange: ranked?.eloChange ?? null,
+    eloBefore: ranked?.eloBefore ?? null,
+    eloAfter: ranked?.eloAfter ?? null,
+    isRanked: !!ranked,
+  };
+}
+
+function rankedRowToPlayerRow(ranked: RankedRow) {
+  return {
+    steamId: ranked.steamId ?? undefined,
+    username: ranked.username,
+    displayName: ranked.steamName ?? ranked.username,
+    team: ranked.team,
+    kills: ranked.kills,
+    deaths: ranked.deaths,
+    assists: ranked.assists,
+    headshots: ranked.headshots,
+    mvps: ranked.mvps,
+    damage: ranked.damage,
+    adr: ranked.adr,
+    steamAvatar: ranked.steamAvatar,
+    isAdmin: ranked.isAdmin,
+    kd: kdRatio(ranked.kills, ranked.deaths),
+    eloChange: ranked.eloChange,
+    eloBefore: ranked.eloBefore,
+    eloAfter: ranked.eloAfter,
+    isRanked: true,
+  };
+}
+
+function sortTeamPlayers<T extends { kills: number; assists: number }>(
+  players: T[]
+) {
+  return [...players].sort(
+    (a, b) => b.kills - a.kills || b.assists - a.assists
+  );
+}
+
 export async function getMatchDetail(matchId: string) {
   const match = await db.query.matches.findFirst({
     where: eq(matches.id, matchId),
@@ -61,29 +146,17 @@ export async function getMatchDetail(matchId: string) {
       adr: r.adr,
     }));
 
-  const enriched = scoreboard.map((entry) => {
-    const ranked = rankedRows.find(
-      (r) =>
-        (entry.username && r.username === entry.username) ||
-        (entry.steamId && r.steamId === entry.steamId)
-    );
-    return {
-      ...entry,
-      displayName:
-        entry.displayName ?? ranked?.steamName ?? entry.username ?? "Player",
-      username: entry.username ?? ranked?.username,
-      steamAvatar: ranked?.steamAvatar ?? null,
-      isAdmin: ranked?.isAdmin ?? false,
-      kd: kdRatio(entry.kills, entry.deaths),
-      eloChange: ranked?.eloChange ?? null,
-      eloBefore: ranked?.eloBefore ?? null,
-      eloAfter: ranked?.eloAfter ?? null,
-      isRanked: !!ranked,
-    };
-  });
+  const enriched = scoreboard.map((entry) =>
+    enrichScoreboardEntry(entry, rankedRows)
+  );
 
-  const team0 = enriched.filter((p) => p.team === 0);
-  const team1 = enriched.filter((p) => p.team === 1);
+  for (const ranked of rankedRows) {
+    if (enriched.some((entry) => matchesRankedEntry(entry, ranked))) continue;
+    enriched.push(rankedRowToPlayerRow(ranked));
+  }
+
+  const team0 = sortTeamPlayers(enriched.filter((p) => p.team === 0));
+  const team1 = sortTeamPlayers(enriched.filter((p) => p.team === 1));
 
   return {
     id: match.id,
@@ -118,6 +191,8 @@ export async function listRecentMatchesForUser(userId: string, limit = 10) {
       won: matchPlayers.won,
       team0Score: matches.team0Score,
       team1Score: matches.team1Score,
+      demoShareCode: matches.demoShareCode,
+      demoUrl: matches.demoUrl,
       playedAt: matches.createdAt,
     })
     .from(matchPlayers)

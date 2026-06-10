@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { MatchDemoLink } from "@/components/match-demo-link";
 import { cn } from "@/lib/utils";
 
 export type RecentMatchRow = {
@@ -23,6 +24,8 @@ export type RecentMatchRow = {
   won: boolean;
   team0Score?: number | null;
   team1Score?: number | null;
+  demoShareCode?: string | null;
+  demoUrl?: string | null;
   playedAt: Date;
 };
 
@@ -42,6 +45,7 @@ export function RecentMatchesTable({ matches }: { matches: RecentMatchRow[] }) {
           <TableHead>Result</TableHead>
           <TableHead>K/D/A</TableHead>
           <TableHead>Elo</TableHead>
+          <TableHead>Demo</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -82,6 +86,13 @@ export function RecentMatchesTable({ matches }: { matches: RecentMatchRow[] }) {
             >
               {m.eloChange >= 0 ? "+" : ""}
               {m.eloChange}
+            </TableCell>
+            <TableCell>
+              <MatchDemoLink
+                demoShareCode={m.demoShareCode}
+                demoUrl={m.demoUrl}
+                compact
+              />
             </TableCell>
           </TableRow>
         ))}

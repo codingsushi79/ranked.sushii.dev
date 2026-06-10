@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLinkItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -117,25 +118,25 @@ export function SiteHeader({
                 <span className="hidden text-sm sm:inline">{user.username}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem render={<Link href={`/players/${user.username}`} />}>
+                <DropdownMenuLinkItem render={<Link href={`/players/${user.username}`} />}>
                   View profile
-                </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href="/profile" />}>
+                </DropdownMenuLinkItem>
+                <DropdownMenuLinkItem render={<Link href="/profile" />}>
                   Settings
-                </DropdownMenuItem>
+                </DropdownMenuLinkItem>
                 {user.isAdmin && (
-                  <DropdownMenuItem render={<Link href="/admin" />}>
+                  <DropdownMenuLinkItem render={<Link href="/admin" />}>
                     Admin panel
-                  </DropdownMenuItem>
+                  </DropdownMenuLinkItem>
                 )}
                 {showServerTab && (
-                  <DropdownMenuItem render={<Link href="/server" />}>
+                  <DropdownMenuLinkItem render={<Link href="/server" />}>
                     Season finale server
-                  </DropdownMenuItem>
+                  </DropdownMenuLinkItem>
                 )}
-                <DropdownMenuItem render={<Link href="/download" />}>
+                <DropdownMenuLinkItem render={<Link href="/download" />}>
                   Download client
-                </DropdownMenuItem>
+                </DropdownMenuLinkItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>

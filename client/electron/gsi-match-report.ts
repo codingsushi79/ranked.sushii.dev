@@ -26,6 +26,8 @@ export type GsiMatchReport = {
   winnerTeam: number;
   team0Score: number;
   team1Score: number;
+  demoShareCode?: string;
+  demoUrl?: string;
   players: GsiMatchPlayer[];
 };
 
@@ -132,7 +134,10 @@ function playerFromGsi(
 export function buildMatchReportFromGsi(
   payload: RawGsiPayload,
   externalId: string,
-  session?: GsiMatchSessionMeta
+  session?: GsiMatchSessionMeta & {
+    demoShareCode?: string | null;
+    demoUrl?: string | null;
+  }
 ): GsiMatchReport | { error: string } {
   const fallback = session?.lastLivePayload ?? null;
   const mapName =
@@ -172,6 +177,8 @@ export function buildMatchReportFromGsi(
     winnerTeam,
     team0Score,
     team1Score,
+    demoShareCode: session?.demoShareCode ?? undefined,
+    demoUrl: session?.demoUrl ?? undefined,
     players,
   };
 }

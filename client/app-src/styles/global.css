@@ -1364,6 +1364,18 @@ input {
   gap: 14px;
 }
 
+.match-demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.match-demo-links {
+  display: inline-flex;
+  gap: 8px;
+}
+
 .home-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1513,6 +1525,35 @@ input {
 
 .data-table tr.is-viewer {
   background: rgba(124, 92, 255, 0.08);
+}
+
+.data-table tr.is-ranked {
+  background: rgba(124, 92, 255, 0.08);
+  box-shadow: inset 3px 0 0 rgba(124, 92, 255, 0.75);
+}
+
+.data-table tr.is-unranked {
+  color: var(--muted);
+}
+
+.match-player-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-ranked-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  background: rgba(124, 92, 255, 0.16);
+  border: 1px solid rgba(124, 92, 255, 0.28);
 }
 
 .table-link {

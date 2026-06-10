@@ -54,6 +54,13 @@ export function CsrepTrustPanel({
     return <p className="ranked-meta">Link Steam to show a CSRep.gg trust rating.</p>;
   }
 
+  const ratingHint =
+    trust.score == null && trust.configured
+      ? "CSRep connected — this player has no public trust score yet."
+      : trust.score == null && !trust.configured
+        ? "Set CSREP_API_KEY on the server to load CSRep trust ratings."
+        : null;
+
   return (
     <div className="csrep-panel">
       <div className="csrep-panel-head">
@@ -66,6 +73,7 @@ export function CsrepTrustPanel({
           View on CSRep.gg
         </button>
       </div>
+      {ratingHint && <p className="ranked-meta">{ratingHint}</p>}
       <div className="csrep-panel-grid">
         <div className="card-surface csrep-stat">
           <p className="section-label">Trust rating</p>

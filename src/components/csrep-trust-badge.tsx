@@ -95,6 +95,12 @@ export function CsrepTrustPanel({ trust }: { trust: CsrepTrust | CsrepTrustJson 
   }
 
   const colors = labelStyles[trust.label] ?? labelStyles.Unknown;
+  const ratingHint =
+    trust.score == null && trust.configured
+      ? "CSRep connected — this player has no public trust score yet."
+      : trust.score == null && !trust.configured
+        ? "Set CSREP_API_KEY on the server to load CSRep trust ratings."
+        : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -109,6 +115,9 @@ export function CsrepTrustPanel({ trust }: { trust: CsrepTrust | CsrepTrustJson 
           View on CSRep.gg
         </Link>
       </div>
+      {ratingHint && (
+        <p className="text-sm text-muted-foreground">{ratingHint}</p>
+      )}
       <div className="grid gap-3 sm:grid-cols-3">
         <div className={cn("rounded-lg border px-3 py-2", colors)}>
           <p className="text-xs opacity-80">Trust rating</p>
