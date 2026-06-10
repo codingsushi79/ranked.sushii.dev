@@ -75,11 +75,11 @@ export function expectedScore(teamElo: number, enemyElo: number): number {
 
 /** K-factor: higher during placements, lower at high ELO to slow rank inflation. */
 export function kFactor(elo: number, placementGames: number): number {
-  if (placementGames < PLACEMENT_GAMES) return 40;
-  if (elo < 1500) return 28;
-  if (elo < 2500) return 24;
-  if (elo < 3500) return 20;
-  return 16;
+  if (placementGames < PLACEMENT_GAMES) return 48;
+  if (elo < 1500) return 32;
+  if (elo < 2500) return 28;
+  if (elo < 3500) return 24;
+  return 20;
 }
 
 /** Performance modifier from individual stats (−0.15 to +0.15 on actual score). */
@@ -110,6 +110,6 @@ export function calculateEloChange(params: {
   const adjustedActual = Math.max(0, Math.min(1, actual + perf));
   let change = Math.round(k * (adjustedActual - expected));
   change = Math.max(-50, Math.min(50, change));
-  if (params.won) change = Math.max(0, change);
+  if (params.won) change = Math.max(6, change);
   return change;
 }

@@ -1,4 +1,5 @@
 import type { RawGsiPayload } from "./gsi-server";
+import { extractDemoFromGsi } from "./gsi-demo";
 import { normalizeMatchMode, type AllowedMatchMode } from "./match-modes";
 
 export type GsiMatchSessionMeta = {
@@ -83,25 +84,58 @@ function resolveScores(
   return { team0Score, team1Score };
 }
 
+function upsertPlayer(
+  map: Map<string, GsiMatchPlayer>,
+  parsed: GsiMatchPlayer
+) {
+  const existing = map.get(parsed.steamId);
+  if (!existing) {
+    map.set(parsed.steamId, parsed);
+    return;
+  }
+
+  map.set(parsed.steamId, {
+    steamId: parsed.steamId,
+    team: parsed.team,
+    kills: Math.max(existing.kills, parsed.kills),
+    deaths: Math.max(existing.deaths, parsed.deaths),
+    assists: Math.max(existing.assists, parsed.assists),
+    headshots: Math.max(existing.headshots, parsed.headshots),
+    mvps: Math.max(existing.mvps, parsed.mvps),
+    damage: Math.max(existing.damage, parsed.damage),
+    adr: Math.max(existing.adr, parsed.adr),
+  });
+}
+
+function countAllPlayers(payload: RawGsiPayload | null | undefined) {
+  return payload?.allplayers ? Object.keys(payload.allplayers).length : 0;
+}
+
 function collectPlayers(
   payload: RawGsiPayload,
   fallback?: RawGsiPayload | null
 ): GsiMatchPlayer[] {
   const bySteamId = new Map<string, GsiMatchPlayer>();
+  const liveCount = countAllPlayers(fallback);
+  const endCount = countAllPlayers(payload);
+  const sources =
+    liveCount >= endCount
+      ? [fallback, payload].filter(Boolean)
+      : [payload, fallback].filter(Boolean);
 
-  for (const source of [payload, fallback]) {
+  for (const source of sources) {
     if (!source) continue;
 
     if (source.allplayers) {
       for (const [steamId, data] of Object.entries(source.allplayers)) {
         const parsed = playerFromGsi(steamId, data);
-        if (parsed) bySteamId.set(steamId, parsed);
+        if (parsed) upsertPlayer(bySteamId, parsed);
       }
     }
 
     if (source.player?.steamid) {
       const parsed = playerFromGsi(source.player.steamid, source.player);
-      if (parsed) bySteamId.set(source.player.steamid, parsed);
+      if (parsed) upsertPlayer(bySteamId, parsed);
     }
   }
 
@@ -170,6 +204,9 @@ export function buildMatchReportFromGsi(
     };
   }
 
+  const demoFromPayload = extractDemoFromGsi(payload);
+  const demoFromLive = extractDemoFromGsi(fallback);
+
   return {
     externalId,
     map: mapName,
@@ -177,8 +214,16 @@ export function buildMatchReportFromGsi(
     winnerTeam,
     team0Score,
     team1Score,
-    demoShareCode: session?.demoShareCode ?? undefined,
-    demoUrl: session?.demoUrl ?? undefined,
+    demoShareCode:
+      session?.demoShareCode ??
+      demoFromPayload.demoShareCode ??
+      demoFromLive.demoShareCode ??
+      undefined,
+    demoUrl:
+      session?.demoUrl ??
+      demoFromPayload.demoUrl ??
+      demoFromLive.demoUrl ??
+      undefined,
     players,
   };
 }

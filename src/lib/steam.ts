@@ -38,21 +38,57 @@ export async function verifySteamOpenId(
   return extractSteamId(claimedId);
 }
 
-export async function fetchSteamProfile(steamId: string) {
+export async function fetchSteamProfiles(steamIds: string[]) {
+  const unique = [...new Set(steamIds.filter(Boolean))];
+  const profiles = new Map<
+    string,
+    { steamName: string; steamAvatar: string | null }
+  >();
+  if (unique.length === 0) return profiles;
+
   const key = process.env.STEAM_API_KEY;
   if (!key) {
-    return {
-      steamName: `Player ${steamId.slice(-4)}`,
-      steamAvatar: null as string | null,
-    };
+    for (const steamId of unique) {
+      profiles.set(steamId, {
+        steamName: `Player ${steamId.slice(-4)}`,
+        steamAvatar: null,
+      });
+    }
+    return profiles;
   }
 
-  const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${key}&steamids=${steamId}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  const player = data?.response?.players?.[0];
-  return {
-    steamName: player?.personaname ?? `Player ${steamId.slice(-4)}`,
-    steamAvatar: player?.avatarfull ?? null,
-  };
+  for (let index = 0; index < unique.length; index += 100) {
+    const batch = unique.slice(index, index + 100);
+    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${key}&steamids=${batch.join(",")}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    for (const player of data?.response?.players ?? []) {
+      if (!player?.steamid) continue;
+      profiles.set(player.steamid, {
+        steamName: player.personaname ?? `Player ${String(player.steamid).slice(-4)}`,
+        steamAvatar: player.avatarfull ?? null,
+      });
+    }
+  }
+
+  for (const steamId of unique) {
+    if (!profiles.has(steamId)) {
+      profiles.set(steamId, {
+        steamName: `Player ${steamId.slice(-4)}`,
+        steamAvatar: null,
+      });
+    }
+  }
+
+  return profiles;
+}
+
+export async function fetchSteamProfile(steamId: string) {
+  const profiles = await fetchSteamProfiles([steamId]);
+  return (
+    profiles.get(steamId) ?? {
+      steamName: `Player ${steamId.slice(-4)}`,
+      steamAvatar: null as string | null,
+    }
+  );
 }

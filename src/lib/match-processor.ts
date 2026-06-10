@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   users,
@@ -10,6 +10,8 @@ import {
 import { calculateEloChange, STARTING_ELO } from "@/lib/elo";
 import { ensureCurrentSeason, getOrCreatePlayerSeason } from "@/lib/player";
 import { isRankingsLocked } from "@/lib/finale";
+import { fetchSteamProfiles } from "@/lib/steam";
+import { normalizeScoreboard } from "@/lib/scoreboard";
 import type { matchReportSchema } from "@/lib/validators";
 import type { z } from "zod";
 
@@ -50,6 +52,9 @@ export async function processMatchReport(report: MatchReport) {
     seasonMvps: number;
     seasonDamage: number;
     seasonMatches: number;
+    username: string;
+    steamName: string | null;
+    steamId: string | null;
   };
 
   type PlayerWithElo = {
@@ -59,14 +64,26 @@ export async function processMatchReport(report: MatchReport) {
 
   const playersWithElo: PlayerWithElo[] = [];
   const resolvedPlayers: ResolvedPlayer[] = [];
+  const steamIds = [
+    ...new Set(report.players.map((p) => p.steamId).filter((id): id is string => !!id)),
+  ];
+  const linkedUsers = steamIds.length
+    ? await db.query.users.findMany({
+        where: inArray(users.steamId, steamIds),
+      })
+    : [];
+  const userBySteamId = new Map(
+    linkedUsers
+      .filter((user) => user.steamId)
+      .map((user) => [user.steamId!, user])
+  );
+  const steamProfiles = await fetchSteamProfiles(steamIds);
 
   for (const p of report.players) {
     let userId = p.userId;
-    if (!userId && p.steamId) {
-      const user = await db.query.users.findFirst({
-        where: eq(users.steamId, p.steamId),
-      });
-      userId = user?.id;
+    const linked = p.steamId ? userBySteamId.get(p.steamId) : undefined;
+    if (!userId && linked) {
+      userId = linked.id;
     }
 
     let elo = STARTING_ELO;
@@ -94,6 +111,9 @@ export async function processMatchReport(report: MatchReport) {
         seasonMvps: ps.mvps,
         seasonDamage: ps.damage,
         seasonMatches: ps.matchesPlayed,
+        username: linked?.username ?? p.username ?? "Player",
+        steamName: linked?.steamName ?? p.displayName ?? null,
+        steamId: p.steamId ?? linked?.steamId ?? null,
       });
     }
 
@@ -113,101 +133,113 @@ export async function processMatchReport(report: MatchReport) {
   const team1Avg =
     team1.reduce((s, p) => s + p.elo, 0) / Math.max(team1.length, 1);
 
-  const scoreboard: ScoreboardEntry[] = report.players.map((p) => ({
-    steamId: p.steamId,
-    username: p.username,
-    displayName: p.displayName,
-    team: p.team,
-    kills: p.kills,
-    deaths: p.deaths,
-    assists: p.assists,
-    headshots: p.headshots ?? 0,
-    mvps: p.mvps ?? 0,
-    damage: p.damage ?? 0,
-    adr: p.adr ?? 0,
-  }));
-
-  const [match] = await db
-    .insert(matches)
-    .values({
-      seasonId: season.id,
-      externalId: report.externalId,
-      map: report.map,
-      mode: report.mode,
-      winnerTeam: report.winnerTeam,
-      team0Score: report.team0Score ?? null,
-      team1Score: report.team1Score ?? null,
-      demoShareCode: report.demoShareCode ?? null,
-      demoUrl: report.demoUrl ?? null,
-      scoreboard,
-    })
-    .returning();
-
-  const results = [];
-
-  for (const p of resolvedPlayers) {
-    const teamAvg = p.team === 0 ? team0Avg : team1Avg;
-    const enemyAvg = p.team === 0 ? team1Avg : team0Avg;
-    const won = p.team === report.winnerTeam;
-
-    const eloChange = calculateEloChange({
-      playerElo: p.elo,
-      teamAvgElo: teamAvg,
-      enemyAvgElo: enemyAvg,
-      won,
-      placementGames: p.placementGames,
-      stats: {
-        kills: p.kills,
-        deaths: p.deaths,
-        assists: p.assists,
-        adr: p.adr,
-      },
-    });
-
-    const newElo = Math.max(0, p.elo + eloChange);
-
-    await db.insert(matchPlayers).values({
-      matchId: match.id,
-      userId: p.userId,
+  const rawScoreboard: ScoreboardEntry[] = report.players.map((p) => {
+    const linked = p.steamId ? userBySteamId.get(p.steamId) : undefined;
+    const steamProfile = p.steamId ? steamProfiles.get(p.steamId) : undefined;
+    return {
+      steamId: p.steamId,
+      username: p.username ?? linked?.username,
+      displayName:
+        p.displayName ??
+        linked?.steamName ??
+        steamProfile?.steamName ??
+        linked?.username,
       team: p.team,
       kills: p.kills,
       deaths: p.deaths,
       assists: p.assists,
-      headshots: p.headshots,
-      mvps: p.mvps,
-      damage: p.damage,
-      adr: p.adr,
-      eloBefore: p.elo,
-      eloAfter: newElo,
-      eloChange,
-      won,
-    });
+      headshots: p.headshots ?? 0,
+      mvps: p.mvps ?? 0,
+      damage: p.damage ?? 0,
+      adr: p.adr ?? 0,
+    };
+  });
 
-    await db
-      .update(playerSeasons)
-      .set({
-        elo: newElo,
-        placementGames: p.placementGames + 1,
-        wins: p.wins + (won ? 1 : 0),
-        losses: p.losses + (won ? 0 : 1),
-        kills: p.seasonKills + p.kills,
-        deaths: p.seasonDeaths + p.deaths,
-        assists: p.seasonAssists + p.assists,
-        headshots: p.seasonHeadshots + p.headshots,
-        mvps: p.seasonMvps + p.mvps,
-        damage: p.seasonDamage + p.damage,
-        matchesPlayed: p.seasonMatches + 1,
-        updatedAt: new Date(),
+  const scoreboard = normalizeScoreboard(rawScoreboard, resolvedPlayers);
+
+  return db.transaction(async (tx) => {
+    const [match] = await tx
+      .insert(matches)
+      .values({
+        seasonId: season.id,
+        externalId: report.externalId,
+        map: report.map,
+        mode: report.mode,
+        winnerTeam: report.winnerTeam,
+        team0Score: report.team0Score ?? null,
+        team1Score: report.team1Score ?? null,
+        demoShareCode: report.demoShareCode ?? null,
+        demoUrl: report.demoUrl ?? null,
+        scoreboard,
       })
-      .where(
-        and(
-          eq(playerSeasons.userId, p.userId),
-          eq(playerSeasons.seasonId, season.id)
-        )
-      );
+      .returning();
 
-    results.push({ userId: p.userId, eloChange, newElo, won });
-  }
+    const results = [];
 
-  return { duplicate: false, matchId: match.id, results };
+    for (const p of resolvedPlayers) {
+      const teamAvg = p.team === 0 ? team0Avg : team1Avg;
+      const enemyAvg = p.team === 0 ? team1Avg : team0Avg;
+      const won = p.team === report.winnerTeam;
+
+      const eloChange = calculateEloChange({
+        playerElo: p.elo,
+        teamAvgElo: teamAvg,
+        enemyAvgElo: enemyAvg,
+        won,
+        placementGames: p.placementGames,
+        stats: {
+          kills: p.kills,
+          deaths: p.deaths,
+          assists: p.assists,
+          adr: p.adr,
+        },
+      });
+
+      const newElo = Math.max(0, p.elo + eloChange);
+
+      await tx.insert(matchPlayers).values({
+        matchId: match.id,
+        userId: p.userId,
+        team: p.team,
+        kills: p.kills,
+        deaths: p.deaths,
+        assists: p.assists,
+        headshots: p.headshots,
+        mvps: p.mvps,
+        damage: p.damage,
+        adr: p.adr,
+        eloBefore: p.elo,
+        eloAfter: newElo,
+        eloChange,
+        won,
+      });
+
+      await tx
+        .update(playerSeasons)
+        .set({
+          elo: newElo,
+          placementGames: p.placementGames + 1,
+          wins: p.wins + (won ? 1 : 0),
+          losses: p.losses + (won ? 0 : 1),
+          kills: p.seasonKills + p.kills,
+          deaths: p.seasonDeaths + p.deaths,
+          assists: p.seasonAssists + p.assists,
+          headshots: p.seasonHeadshots + p.headshots,
+          mvps: p.seasonMvps + p.mvps,
+          damage: p.seasonDamage + p.damage,
+          matchesPlayed: p.seasonMatches + 1,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(playerSeasons.userId, p.userId),
+            eq(playerSeasons.seasonId, season.id)
+          )
+        );
+
+      results.push({ userId: p.userId, eloChange, newElo, won });
+    }
+
+    return { duplicate: false, matchId: match.id, results };
+  });
 }

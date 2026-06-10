@@ -9,6 +9,7 @@ import {
 } from "@/db/schema";
 import { buildDemoLinks } from "@/lib/demo";
 import { kdRatio } from "@/lib/player";
+import { matchesRankedEntry, normalizeScoreboard } from "@/lib/scoreboard";
 
 type RankedRow = {
   userId: string;
@@ -30,22 +31,6 @@ type RankedRow = {
   eloChange: number;
   won: boolean;
 };
-
-function matchesRankedEntry(
-  entry: ScoreboardEntry,
-  ranked: RankedRow
-): boolean {
-  if (entry.username && ranked.username === entry.username) return true;
-  if (entry.steamId && ranked.steamId === entry.steamId) return true;
-  if (
-    entry.displayName &&
-    ranked.steamName &&
-    entry.displayName === ranked.steamName
-  ) {
-    return true;
-  }
-  return false;
-}
 
 function enrichScoreboardEntry(entry: ScoreboardEntry, rankedRows: RankedRow[]) {
   const ranked = rankedRows.find((r) => matchesRankedEntry(entry, r));
@@ -130,21 +115,24 @@ export async function getMatchDetail(matchId: string) {
     .innerJoin(users, eq(matchPlayers.userId, users.id))
     .where(eq(matchPlayers.matchId, matchId));
 
-  const scoreboard: ScoreboardEntry[] =
-    match.scoreboard ??
-    rankedRows.map((r) => ({
-      steamId: r.steamId ?? undefined,
-      username: r.username,
-      displayName: r.steamName ?? r.username,
-      team: r.team,
-      kills: r.kills,
-      deaths: r.deaths,
-      assists: r.assists,
-      headshots: r.headshots,
-      mvps: r.mvps,
-      damage: r.damage,
-      adr: r.adr,
-    }));
+  const fallbackScoreboard: ScoreboardEntry[] = rankedRows.map((r) => ({
+    steamId: r.steamId ?? undefined,
+    username: r.username,
+    displayName: r.steamName ?? r.username,
+    team: r.team,
+    kills: r.kills,
+    deaths: r.deaths,
+    assists: r.assists,
+    headshots: r.headshots,
+    mvps: r.mvps,
+    damage: r.damage,
+    adr: r.adr,
+  }));
+
+  const scoreboard = normalizeScoreboard(
+    match.scoreboard ?? fallbackScoreboard,
+    rankedRows
+  );
 
   const enriched = scoreboard.map((entry) =>
     enrichScoreboardEntry(entry, rankedRows)

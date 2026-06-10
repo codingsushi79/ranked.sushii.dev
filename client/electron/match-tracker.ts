@@ -5,6 +5,7 @@ import { GsiServer, type RawGsiPayload } from "./gsi-server";
 import { GSI_CONFIG_FILENAME, writeGsiConfig } from "./gsi-config";
 import { buildMatchReportFromGsi } from "./gsi-match-report";
 import { extractDemoFromGsi } from "./gsi-demo";
+import { findRecentShareCode } from "./demo-harvest";
 import { isAllowedMatchMode, normalizeMatchMode } from "./match-modes";
 import { isMatchRecordingBlocked } from "./updater";
 
@@ -349,6 +350,14 @@ export class MatchTracker {
       this.matchSession.lastLivePayload ??
       currentPayload;
     if (!reportPayload) return;
+
+    if (!this.matchSession.demoShareCode) {
+      const cfgDir = getCs2CfgDirectory();
+      if (cfgDir) {
+        const harvested = findRecentShareCode(cfgDir);
+        if (harvested) this.matchSession.demoShareCode = harvested;
+      }
+    }
 
     const result = buildMatchReportFromGsi(reportPayload, this.matchSession.externalId, {
       map: this.matchSession.map,
