@@ -1,4 +1,5 @@
 import { PageEnter } from "@/components/motion/page-enter";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import { getCurrentUser } from "@/lib/session";
@@ -22,6 +23,7 @@ export default async function AppLayout({
       <main className="flex-1">
         <PageEnter>{children}</PageEnter>
       </main>
+      <SiteFooter />
       <Toaster richColors />
     </>
   );

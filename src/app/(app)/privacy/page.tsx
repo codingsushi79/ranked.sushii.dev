@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { buttonVariants } from "@/components/ui/button";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ const SECTIONS = [
   },
   {
     title: "7. Retention and deletion",
-    body: "We keep account and gameplay data while your account is active and as needed to operate seasons, leaderboards, and match records. Email verification codes expire shortly after use. You may stop using the Service at any time; contact us if you want account deletion handled manually.",
+    body: `We keep account and gameplay data while your account is active and as needed to operate seasons, leaderboards, and match records. Email verification codes expire shortly after use. You may stop using the Service at any time; email ${SUPPORT_EMAIL} if you want account deletion handled manually.`,
   },
   {
     title: "8. Security",
@@ -50,7 +51,7 @@ const SECTIONS = [
   },
   {
     title: "11. Contact",
-    body: "Privacy questions can be sent to the site operator through the contact method listed on the main site or GitHub repository.",
+    body: `Privacy questions: ${SUPPORT_EMAIL}.`,
   },
 ] as const;
 
@@ -72,7 +73,27 @@ export default function PrivacyPage() {
             <h2 className="text-base font-semibold text-foreground">
               {section.title}
             </h2>
-            <p>{section.body}</p>
+            {section.title === "11. Contact" ? (
+              <p>
+                Privacy questions:{" "}
+                <a href={SUPPORT_MAILTO} className="text-foreground underline-offset-4 hover:underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
+              </p>
+            ) : section.title === "7. Retention and deletion" ? (
+              <p>
+                We keep account and gameplay data while your account is active and as needed to
+                operate seasons, leaderboards, and match records. Email verification codes expire
+                shortly after use. You may stop using the Service at any time; email{" "}
+                <a href={SUPPORT_MAILTO} className="text-foreground underline-offset-4 hover:underline">
+                  {SUPPORT_EMAIL}
+                </a>{" "}
+                if you want account deletion handled manually.
+              </p>
+            ) : (
+              <p>{section.body}</p>
+            )}
           </section>
         ))}
       </div>

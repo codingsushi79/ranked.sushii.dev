@@ -61,6 +61,10 @@ npm run dev
 | `RESEND_FROM` | Verified sender address |
 | `STEAM_API_KEY` | Optional Steam Web API key for avatars |
 
+## Support
+
+Questions, bugs, or account issues: **sashabaranov@sushii.dev**
+
 ## License
 
 MIT — see [LICENSE](./LICENSE). The Windows desktop client source lives in `client/` and is included under the same license.

@@ -135,6 +135,21 @@ export function SettingsView({
         </div>
       </div>
 
+      <div className="card-surface settings-card">
+        <h3 className="section-label">Help</h3>
+        <p className="ranked-meta">
+          Questions, bugs, or account issues — email{" "}
+          <button
+            type="button"
+            className="table-link"
+            onClick={() => void window.ranked.openExternal("mailto:sashabaranov@sushii.dev")}
+          >
+            sashabaranov@sushii.dev
+          </button>
+          .
+        </p>
+      </div>
+
       <div className="card-surface settings-card settings-card-danger">
         <h3 className="section-label">Sign out</h3>
         <p className="ranked-meta">

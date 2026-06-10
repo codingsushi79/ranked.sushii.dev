@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -41,6 +42,7 @@ export async function sendVerificationEmail(email: string, otp: string) {
           <tr>
             <td style="padding:20px 32px;background:#f9fafb;text-align:center;border-top:1px solid #f3f4f6;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">ranked.sushii.dev</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#9ca3af;">Help: ${SUPPORT_EMAIL}</p>
             </td>
           </tr>
         </table>

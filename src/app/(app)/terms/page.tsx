@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { buttonVariants } from "@/components/ui/button";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ const SECTIONS = [
   },
   {
     title: "9. Contact",
-    body: "Questions about these terms can be sent to the site operator through the contact method listed on the main site or repository. See also our Privacy Policy at /privacy.",
+    body: `Questions about these terms: ${SUPPORT_EMAIL}. See also our Privacy Policy at /privacy.`,
   },
 ] as const;
 
@@ -64,7 +65,21 @@ export default function TermsPage() {
             <h2 className="text-base font-semibold text-foreground">
               {section.title}
             </h2>
-            <p>{section.body}</p>
+            {section.title === "9. Contact" ? (
+              <p>
+                Questions about these terms:{" "}
+                <a href={SUPPORT_MAILTO} className="text-foreground underline-offset-4 hover:underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                . See also our{" "}
+                <Link href="/privacy" className="text-foreground underline-offset-4 hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            ) : (
+              <p>{section.body}</p>
+            )}
           </section>
         ))}
       </div>
