@@ -122,6 +122,24 @@ export const csrepProfiles = pgTable("csrep_profiles", {
 
 export type CsrepProfileRow = typeof csrepProfiles.$inferSelect;
 
+export const playerLive = pgTable("player_live", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  inMatch: boolean("in_match").notNull().default(false),
+  map: text("map"),
+  mode: text("mode"),
+  phase: text("phase"),
+  playerTeam: integer("player_team"),
+  team0Score: integer("team0_score").notNull().default(0),
+  team1Score: integer("team1_score").notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type PlayerLiveRow = typeof playerLive.$inferSelect;
+
 export const matches = pgTable(
   "matches",
   {

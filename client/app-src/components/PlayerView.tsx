@@ -3,6 +3,7 @@ import type { AppView, PublicPlayer } from "../lib/types";
 import { formatMap, initials } from "../lib/types";
 import { LevelBadge } from "./LevelBadge";
 import { CsrepTrustBadge, CsrepTrustPanel } from "./CsrepTrustBadge";
+import { LiveMatchStatus } from "./LiveMatchStatus";
 
 export function PlayerView({
   username,
@@ -55,6 +56,8 @@ export function PlayerView({
           </div>
         </div>
       </header>
+
+      <LiveMatchStatus username={player.username} initial={player.live} />
 
       <div className="stat-grid stat-grid-compact">
         <div className="card-surface stat-tile">

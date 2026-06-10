@@ -22,6 +22,8 @@ import { RecentMatchesTable } from "@/components/recent-matches-table";
 import { listRecentMatchesForUser } from "@/lib/matches";
 import { getCsrepTrust } from "@/lib/csrep";
 import { CsrepTrustBadge, CsrepTrustPanel } from "@/components/csrep-trust-badge";
+import { LiveMatchStatus } from "@/components/live-match-status";
+import { getPlayerLive } from "@/lib/player-live";
 
 export default async function PlayerProfilePage({
   params,
@@ -40,6 +42,7 @@ export default async function PlayerProfilePage({
 
   const recentMatches = await listRecentMatchesForUser(user.id, 10);
   const csrep = user.steamId ? await getCsrepTrust(user.steamId) : null;
+  const live = await getPlayerLive(user.id);
 
   const kd = kdRatio(ps.kills, ps.deaths);
   const winRate =
@@ -80,6 +83,8 @@ export default async function PlayerProfilePage({
             </div>
           </div>
         </div>
+
+        <LiveMatchStatus username={user.username} initial={live} />
 
         {user.steamId && (
           <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both delay-100">

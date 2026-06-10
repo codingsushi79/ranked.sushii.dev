@@ -94,7 +94,21 @@ export type PublicPlayer = {
   season: number;
   stats: ClientProfile["stats"];
   csrep?: CsrepTrustJson | null;
+  live?: PlayerLiveSnapshot | null;
   recentMatches: Omit<RecentMatch, "mode">[];
+};
+
+export type PlayerLiveSnapshot = {
+  inMatch: boolean;
+  map: string;
+  mode: string;
+  phase: string;
+  playerTeam: number;
+  team0Score: number;
+  team1Score: number;
+  playerScore: number;
+  opponentScore: number;
+  updatedAt: string;
 };
 
 export type MatchDetail = {

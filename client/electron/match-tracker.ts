@@ -119,6 +119,8 @@ export class MatchTracker {
   private previousMapPhase: string | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
   private matchSession: MatchSession | null = null;
+  private lastLiveSyncAt = 0;
+  private lastLiveSyncKey = "";
 
   async start() {
     this.gsiInstalled = this.detectGsiInstalled();
@@ -225,7 +227,79 @@ export class MatchTracker {
     }
 
     this.previousMapPhase = mapPhase;
+    await this.syncLiveStatus(payload);
     await this.syncCs2Status();
+  }
+
+  private teamFromGsi(team: string | undefined): number | null {
+    if (!team) return null;
+    const key = team.toUpperCase();
+    if (key === "CT") return 0;
+    if (key === "T") return 1;
+    return null;
+  }
+
+  private readScore(value: unknown): number {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return 0;
+  }
+
+  private async syncLiveStatus(payload: RawGsiPayload) {
+    if (isMatchRecordingBlocked()) {
+      await bridgePost("/live/clear");
+      return;
+    }
+
+    if (!this.matchSession) {
+      await bridgePost("/live/clear");
+      return;
+    }
+
+    const mapPhase = payload.map?.phase ?? null;
+    const mapName = payload.map?.name ?? null;
+    const inMatch =
+      mapPhase === "live" ||
+      mapPhase === "gameover" ||
+      mapPhase === "intermission";
+
+    if (!inMatch || !mapName || mapName === "menu") {
+      await bridgePost("/live/clear");
+      return;
+    }
+
+    const playerTeam = this.teamFromGsi(payload.player?.team);
+    if (playerTeam === null) return;
+
+    const team0Score = this.readScore(payload.map?.team_ct?.score);
+    const team1Score = this.readScore(payload.map?.team_t?.score);
+    const syncKey = `${mapName}:${mapPhase}:${playerTeam}:${team0Score}:${team1Score}`;
+    const now = Date.now();
+    if (syncKey === this.lastLiveSyncKey && now - this.lastLiveSyncAt < 3000) {
+      return;
+    }
+
+    this.lastLiveSyncKey = syncKey;
+    this.lastLiveSyncAt = now;
+
+    await bridgePost("/live/update", {
+      inMatch: true,
+      map: mapName,
+      mode: this.matchSession.mode,
+      phase: mapPhase,
+      playerTeam,
+      team0Score,
+      team1Score,
+    });
+  }
+
+  private async clearLiveStatus() {
+    this.lastLiveSyncKey = "";
+    this.lastLiveSyncAt = 0;
+    await bridgePost("/live/clear");
   }
 
   private async onMatchStart(mapName: string, mode: string) {
@@ -297,6 +371,7 @@ export class MatchTracker {
     this.pendingMatchMode = null;
     this.inGame = false;
     this.currentMode = null;
+    await this.clearLiveStatus();
     await bridgePost("/match/stop");
   }
 
@@ -335,6 +410,7 @@ export class MatchTracker {
         this.cs2Connected = false;
         this.inGame = false;
         this.currentMode = null;
+        void this.clearLiveStatus();
       }
 
       if (this.matchSession && !this.matchSession.reported) {

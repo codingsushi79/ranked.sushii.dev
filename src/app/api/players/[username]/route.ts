@@ -5,6 +5,7 @@ import { ensureCurrentSeason, getOrCreatePlayerSeason, kdRatio } from "@/lib/pla
 import { eloToLevel, PLACEMENT_GAMES } from "@/lib/elo";
 import { getCsrepTrust } from "@/lib/csrep";
 import { csrepTrustToJson } from "@/lib/csrep-types";
+import { getPlayerLive, playerLiveToJson } from "@/lib/player-live";
 import { jsonError, jsonOk } from "@/lib/api";
 
 export async function GET(
@@ -39,6 +40,7 @@ export async function GET(
     .limit(10);
 
   const csrep = user.steamId ? csrepTrustToJson(await getCsrepTrust(user.steamId)) : null;
+  const live = playerLiveToJson(await getPlayerLive(user.id));
 
   return jsonOk({
     username: user.username,
@@ -67,6 +69,7 @@ export async function GET(
           : 0,
     },
     csrep,
+    live,
     recentMatches,
   });
 }

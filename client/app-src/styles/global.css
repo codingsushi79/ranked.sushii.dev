@@ -1025,6 +1025,45 @@ input {
   color: var(--muted);
 }
 
+.live-match-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.live-match-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-score {
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-score-player {
+  color: var(--text);
+}
+
+.live-score-opponent {
+  color: var(--muted);
+}
+
+.live-score-sep {
+  font-size: 22px;
+  color: var(--muted);
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }

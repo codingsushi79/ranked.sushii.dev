@@ -57,6 +57,24 @@ async function reportMatch(config, payload) {
   return data;
 }
 
+async function syncLiveStatus(config, payload) {
+  const clientId = getClientId(config);
+  if (!clientId) return;
+
+  try {
+    await fetch(`${API_URL}/api/client/live`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${clientId}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    /* best effort */
+  }
+}
+
 function createServer(getConfig, saveConfig, reinstallJsi) {
   return http.createServer(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -192,6 +210,21 @@ function createServer(getConfig, saveConfig, reinstallJsi) {
       if (req.method === "POST" && req.url === "/cs2/status") {
         const body = await readBody(req);
         state.setCs2Status(body);
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      if (req.method === "POST" && req.url === "/live/update") {
+        const config = getConfig();
+        const body = await readBody(req);
+        void syncLiveStatus(config, body);
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      if (req.method === "POST" && req.url === "/live/clear") {
+        const config = getConfig();
+        void syncLiveStatus(config, { inMatch: false });
         sendJson(res, 200, { ok: true });
         return;
       }
