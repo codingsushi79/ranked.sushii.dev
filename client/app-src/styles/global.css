@@ -1659,8 +1659,18 @@ input {
   gap: 8px;
 }
 
-.profile-trust-row {
-  margin-top: 8px;
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.profile-meta-inline {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
 }
 
 .csrep-badge {

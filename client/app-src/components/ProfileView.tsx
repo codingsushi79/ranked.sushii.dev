@@ -10,11 +10,7 @@ export function ProfileView({
   onNavigate: (view: AppView) => void;
   onRefresh: () => Promise<void>;
 }) {
-  const seasonLabel =
-    profile.season.label +
-    (profile.stats.isPlacing
-      ? ` · ${profile.stats.placementsRemaining} placement games left`
-      : "");
+  const seasonLabel = profile.season.label;
 
   const setupActions = !profile.canPlay ? (
     <div className="card-surface alert-card">

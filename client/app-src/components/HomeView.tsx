@@ -22,13 +22,9 @@ export function HomeView({
             {profile.stats.isPlacing &&
               ` · ${profile.stats.placementsRemaining} placement games left`}
           </p>
-          {profile.csrep && (
-            <div className="profile-trust-row">
-              <CsrepTrustBadge trust={profile.csrep} />
-            </div>
-          )}
-          <div className="profile-trust-row">
-            <LevelBadge level={profile.stats.level} elo={profile.stats.elo} />
+          <div className="profile-badges">
+            <LevelBadge level={profile.stats.level} elo={profile.stats.elo} compact />
+            {profile.csrep && <CsrepTrustBadge trust={profile.csrep} />}
           </div>
         </div>
       </header>

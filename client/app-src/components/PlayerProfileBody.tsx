@@ -9,6 +9,7 @@ type ProfileStats = {
   level: number;
   elo: number;
   isPlacing: boolean;
+  placementsRemaining: number;
   wins: number;
   losses: number;
   winRate: number;
@@ -98,13 +99,16 @@ export function PlayerProfileBody({
           </div>
           <div>
             <h1 className="page-title">{username}</h1>
-            <p className="page-subtitle">
-              {steamName ?? "Steam not linked"} · {seasonLabel}
-            </p>
-            <div className="profile-trust-row">
-              <LevelBadge level={stats.level} elo={stats.elo} />
-              {csrep && <CsrepTrustBadge trust={csrep} />}
-              {stats.isPlacing && <span className="ranked-meta">Placements</span>}
+            <p className="page-subtitle">{steamName ?? "Steam not linked"}</p>
+            <div className="profile-badges">
+              <LevelBadge level={stats.level} elo={stats.elo} compact />
+              {steamId && csrep && <CsrepTrustBadge trust={csrep} />}
+              <span className="profile-meta-inline">
+                {seasonLabel}
+                {stats.isPlacing && (
+                  <> · {stats.placementsRemaining} placement games left</>
+                )}
+              </span>
             </div>
           </div>
         </div>
