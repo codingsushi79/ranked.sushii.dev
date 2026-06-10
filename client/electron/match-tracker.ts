@@ -211,7 +211,7 @@ export class MatchTracker {
 
     if (mapName === "menu" && this.matchSession) {
       if (!this.matchSession.reported) {
-        await this.tryReportMatch();
+        await this.tryReportMatch({ fromMenu: true });
         if (this.matchSession && !this.matchSession.reported) {
           await bridgePost("/match/error", {
             externalId: this.matchSession.externalId,
@@ -220,22 +220,8 @@ export class MatchTracker {
         }
       }
       await this.onMatchEnd();
-    } else if (this.matchSession && !this.matchSession.reported) {
-      const enteredGameover =
-        mapPhase === "gameover" && this.previousMapPhase !== "gameover";
-      const leftLive = this.previousMapPhase === "live" && mapPhase !== "live";
-      const postMatchPhase =
-        mapPhase === "gameover" ||
-        mapPhase === "warmup" ||
-        mapPhase === "intermission";
-
-      if (
-        enteredGameover ||
-        leftLive ||
-        (postMatchPhase && this.matchSession.lastLivePayload !== null)
-      ) {
-        await this.tryReportMatch();
-      }
+    } else if (this.matchSession && !this.matchSession.reported && mapPhase === "gameover") {
+      await this.tryReportMatch();
     }
 
     this.previousMapPhase = mapPhase;
@@ -262,13 +248,24 @@ export class MatchTracker {
     });
   }
 
-  private async tryReportMatch(): Promise<void> {
+  private async tryReportMatch(options: { fromMenu?: boolean } = {}): Promise<void> {
     if (!this.matchSession || this.matchSession.reported) return;
     if (isMatchRecordingBlocked()) return;
 
+    const currentPayload = this.gsi?.getLastPayload();
+    const currentPhase = currentPayload?.map?.phase ?? null;
+    const currentMap = currentPayload?.map?.name ?? null;
+
+    if (options.fromMenu) {
+      if (currentMap !== "menu") return;
+    } else if (currentPhase !== "gameover") {
+      return;
+    }
+
     const reportPayload =
+      (!options.fromMenu && currentPhase === "gameover" ? currentPayload : null) ??
       this.matchSession.lastLivePayload ??
-      this.gsi?.getLastPayload();
+      currentPayload;
     if (!reportPayload) return;
 
     const result = buildMatchReportFromGsi(reportPayload, this.matchSession.externalId, {
@@ -341,7 +338,9 @@ export class MatchTracker {
       }
 
       if (this.matchSession && !this.matchSession.reported) {
-        void this.tryReportMatch();
+        if (this.previousMapPhase === "gameover") {
+          void this.tryReportMatch();
+        }
       } else if (this.tracking) {
         void this.onMatchEnd();
       }
